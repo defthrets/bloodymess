@@ -106,10 +106,10 @@ namespace BloodyMess.Core
         public bool WoundsEnabled = true;
 
         /// <summary>Extra wound decals stamped on the body per hit, before the level scales it.</summary>
-        public int WoundsPerHit = 2;
+        public int WoundsPerHit = 1;
 
         /// <summary>Size of those wound decals. 1.0 is the game's own.</summary>
-        public float WoundScale = 1.3f;
+        public float WoundScale = 1.1f;
 
         /// <summary>Whether the game's built-in damage packs are applied on heavy hits.</summary>
         public bool DamagePacks = true;
@@ -121,8 +121,15 @@ namespace BloodyMess.Core
 
         public bool SprayEnabled = true;
 
-        /// <summary>Splatter decals thrown per hit, before scaling.</summary>
-        public int SprayPerHit = 5;
+        /// <summary>
+        /// Splatter decals thrown along the shot line per hit, before scaling.
+        ///
+        /// KEPT LOW DELIBERATELY. This is the airborne half of the mod -- the burst that
+        /// reads as spray in the moment you fire -- and turning it up is what made headshots
+        /// look like a paint bomb. The blood you actually want to see afterwards is on the
+        /// ground, and that is GroundDrops below, which is set far higher.
+        /// </summary>
+        public int SprayPerHit = 2;
 
         /// <summary>
         /// Splatters dropped straight down around the victim on every hit.
@@ -133,7 +140,7 @@ namespace BloodyMess.Core
         /// standing. It is what makes the ground under somebody you have just shot actually
         /// look like it, rather than being clean while a fan of drops sits behind them.
         /// </summary>
-        public int SprayGroundDrops = 4;
+        public int SprayGroundDrops = 10;
 
         /// <summary>How far behind the ped the spray is allowed to reach, in metres.</summary>
         public float SprayRange = 4.5f;
@@ -304,10 +311,16 @@ namespace BloodyMess.Core
         /// against the native list rather than assumed, because passing a float to a bool
         /// parameter is the kind of thing that works on one build and not the next.
         /// </summary>
-        public bool BiggerBloodParticles = true;
+        /// <summary>
+        /// OFF BY DEFAULT NOW. This is the single biggest contributor to the "way too much
+        /// spray" look: it turns up the game's OWN blood particles everywhere, on top of
+        /// whatever this mod adds. Vanilla particles plus our own restrained burst is
+        /// already slightly more than stock, which is the target.
+        /// </summary>
+        public bool BiggerBloodParticles = false;
 
         /// <summary>Bullet impact particle scale. The game's own, applied to everything.</summary>
-        public float BulletImpactScale = 1.5f;
+        public float BulletImpactScale = 1.1f;
 
         /// <summary>Range multiplier for bullet impact decals, so hits stay visible further out.</summary>
         public float BulletImpactRange = 2f;
@@ -334,9 +347,27 @@ namespace BloodyMess.Core
         /// Defaults are a dark arterial red. Raise BloodRed towards 1 for brighter, more
         /// cartoonish blood; raise green and blue together to make it browner and older.
         /// </summary>
-        public float BloodRed = 0.55f;
-        public float BloodGreen = 0.03f;
-        public float BloodBlue = 0.03f;
+        public float BloodRed = 0.30f;
+        public float BloodGreen = 0.025f;
+        public float BloodBlue = 0.022f;
+
+        /// <summary>
+        /// The colour POOLS are tinted, kept separate from the splatter colour above.
+        ///
+        /// THEY NEED THEIR OWN, and this is not fussiness. Reading the game's decals.dat:
+        /// pool id 9001 has FOUR texture variants -- `pool_solid`, a colourless generic pool
+        /// shared with water and oil, plus three proper `fxdecal_blood_pool` textures. The
+        /// engine picks one, so roughly one pool in four comes out through the colourless
+        /// one. On porous ground, id 9006 has ONLY the colourless `pool_porous_solid`.
+        ///
+        /// A tint dark enough to turn the colourless variant into believable blood also
+        /// crushes the three that are already dark red towards black, and a tint gentle
+        /// enough to leave those alone renders the colourless one as a bright scarlet oval
+        /// that looks like a rug. There is no single value that serves both, so there are two.
+        /// </summary>
+        public float PoolRed = 0.38f;
+        public float PoolGreen = 0.03f;
+        public float PoolBlue = 0.028f;
 
         // ---- loading ---------------------------------------------------------
 
@@ -372,9 +403,9 @@ namespace BloodyMess.Core
                 cfg.PlayerWounds = ini.GetBool("Wounds", "PlayerWounds", cfg.PlayerWounds);
 
                 cfg.SprayEnabled = ini.GetBool("Spray", "Enabled", cfg.SprayEnabled);
-                cfg.SprayPerHit = ini.GetInt("Spray", "PerHit", cfg.SprayPerHit, 0, 24);
+                cfg.SprayPerHit = ini.GetInt("Spray", "PerHit", cfg.SprayPerHit, 0, 40);
                 cfg.SprayGroundDrops = ini.GetInt("Spray", "GroundDrops",
-                                                  cfg.SprayGroundDrops, 0, 16);
+                                                  cfg.SprayGroundDrops, 0, 32);
                 cfg.SprayRange = ini.GetFloat("Spray", "Range", cfg.SprayRange, 0.5f, 15f);
                 cfg.SpraySpread = ini.GetFloat("Spray", "Spread", cfg.SpraySpread, 0f, 1.5f);
                 cfg.SprayMinSize = ini.GetFloat("Spray", "MinSize", cfg.SprayMinSize, 0.02f, 2f);
@@ -436,6 +467,10 @@ namespace BloodyMess.Core
                 cfg.BloodRed = ini.GetFloat("Appearance", "BloodRed", cfg.BloodRed, 0f, 1f);
                 cfg.BloodGreen = ini.GetFloat("Appearance", "BloodGreen", cfg.BloodGreen, 0f, 1f);
                 cfg.BloodBlue = ini.GetFloat("Appearance", "BloodBlue", cfg.BloodBlue, 0f, 1f);
+
+                cfg.PoolRed = ini.GetFloat("Appearance", "PoolRed", cfg.PoolRed, 0f, 1f);
+                cfg.PoolGreen = ini.GetFloat("Appearance", "PoolGreen", cfg.PoolGreen, 0f, 1f);
+                cfg.PoolBlue = ini.GetFloat("Appearance", "PoolBlue", cfg.PoolBlue, 0f, 1f);
 
                 Log.Level = cfg.LogLevel;
                 cfg.Validate();

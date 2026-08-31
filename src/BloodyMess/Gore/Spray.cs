@@ -73,9 +73,9 @@ namespace BloodyMess.Gore
             var force = Math.Min(1.6f, 0.45f + hit.Damage / 120f);
             var count = (int)Math.Round(_cfg.SprayPerHit * _cfg.Scale * profile.Spray * force);
 
-            if (hit.Headshot) count += 2;
+            if (hit.Headshot) count += 1;
 
-            count = Math.Min(count, 22);
+            count = Math.Min(count, 10);
 
             for (var i = 0; i < count; i++)
             {
@@ -100,7 +100,7 @@ namespace BloodyMess.Gore
             var drops = (int)Math.Round(_cfg.SprayGroundDrops * _cfg.Scale);
             if (drops <= 0) return;
 
-            drops = Math.Min(drops, 14);
+            drops = Math.Min(drops, 26);
 
             var feet = hit.Ped.Position;
 

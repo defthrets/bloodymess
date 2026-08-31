@@ -154,7 +154,12 @@ namespace BloodyMess.Gore
             if (!_cfg.SprayParticles) return;
             if (!_core.IsLoaded) { KeepAssetLoaded(); return; }
 
-            var scale = profile.FxScale * (0.8f + _cfg.Scale * 0.35f);
+            // NOT SCALED BY THE GORE LEVEL ANY MORE. At Mess this multiplied the burst by
+            // 1.43, and on a shotgun or sniper profile that stacked to nearly 3x the game's
+            // own effect -- which is what made a headshot look like a paint bomb rather than
+            // a gunshot. The level belongs to how much blood ends up on the GROUND; the
+            // burst in the air stays close to stock.
+            var scale = profile.FxScale;
 
             var entry = hit.Headshot && !string.IsNullOrEmpty(profile.HeadFx)
                 ? profile.HeadFx
@@ -164,9 +169,12 @@ namespace BloodyMess.Gore
 
             // The exit burst is thrown a little way along the shot line so it reads as coming
             // out of the far side rather than as a second effect on top of the first.
-            if (!string.IsNullOrEmpty(profile.ExitFx) && hit.Damage >= 15f)
+            // The exit burst is now FATAL HITS ONLY. Playing a second effect on every
+            // wounding shot doubled the spray on anything automatic, which is exactly the
+            // "way too much" everyone sees first.
+            if (hit.Fatal && !string.IsNullOrEmpty(profile.ExitFx) && hit.Damage >= 15f)
             {
-                Play(profile.ExitFx, hit.Position + hit.Direction * 0.35f, scale * 1.1f);
+                Play(profile.ExitFx, hit.Position + hit.Direction * 0.35f, scale);
             }
         }
 

@@ -132,7 +132,7 @@ namespace BloodyMess.Gore
                 // colourless. Tinting costs nothing on the variants that are already red
                 // (it darkens them slightly, which reads as older blood) and is the only
                 // thing that makes the grey ones look like blood at all.
-                new Tint(_cfg.BloodRed, _cfg.BloodGreen, _cfg.BloodBlue));
+                new Tint(_cfg.PoolRed, _cfg.PoolGreen, _cfg.PoolBlue));
 
             if (handle == 0)
             {
