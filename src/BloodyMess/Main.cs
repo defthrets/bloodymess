@@ -123,6 +123,10 @@ namespace BloodyMess
                     _spray.Throw(hit);
                 }
 
+                // Drains the queued ground splatters a few at a time. See Spray._pending:
+                // placing them all in the frame the shot landed spiked the frame time.
+                _spray.Update();
+
                 _pools.Update(_victims);
                 _drips.Update(_victims);
 

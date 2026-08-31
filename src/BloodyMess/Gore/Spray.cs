@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using GTA;
 using GTA.Math;
 using BloodyMess.Core;
@@ -53,6 +54,57 @@ namespace BloodyMess.Gore
 
         /// <summary>Splatters dropped because the decal budget or range said no.</summary>
         public int Refused { get; private set; }
+
+        /// <summary>A ground splatter waiting for a free frame to be placed in.</summary>
+        private struct Pending
+        {
+            public Vector3 At;
+            public float Size;
+            public float Opacity;
+        }
+
+        /// <summary>
+        /// Ground splatters that have been decided on but not yet placed.
+        ///
+        /// THIS QUEUE EXISTS BECAUSE EVERY SPLATTER COSTS A RAYCAST. Finding the ground under
+        /// a drop means a shape test, and with GroundDrops at 10 (18 after the gore level, cap
+        /// 26) a single kill was firing three dozen synchronous shape tests inside ONE tick --
+        /// times every hit that landed on the same frame.
+        ///
+        /// That does not throw and it does not show up as an error. It shows up as a frame
+        /// spike, and GTA's euphoria ragdolls are framerate-sensitive, so the visible symptom
+        /// was peds dying strangely -- stiff, snapping, sliding. SHVDN killing iFruitAddon2
+        /// for "causing the game to freeze too long" in the same session was the other half of
+        /// the same evidence.
+        ///
+        /// So the work is decided immediately and PAID FOR over the following frames, a few
+        /// probes at a time. The same blood ends up on the ground; it just arrives over a
+        /// quarter of a second instead of all inside one frame.
+        /// </summary>
+        private readonly Queue<Pending> _pending = new Queue<Pending>();
+
+        /// <summary>How many ground splatters are still waiting. Shown in the menu.</summary>
+        public int Queued => _pending.Count;
+
+        /// <summary>
+        /// Places a few of the queued ground splatters. Called once per tick.
+        ///
+        /// The queue is also capped: if somebody is killing faster than the probe budget can
+        /// keep up with, the OLDEST pending drops are dropped rather than allowed to pile up
+        /// into a backlog that keeps painting blood minutes after the fight ended.
+        /// </summary>
+        public void Update()
+        {
+            var budget = _cfg.ProbesPerFrame;
+
+            while (budget-- > 0 && _pending.Count > 0)
+            {
+                var next = _pending.Dequeue();
+                Splash(next.At, next.Size, next.Opacity);
+            }
+
+            while (_pending.Count > 300) _pending.Dequeue();
+        }
 
         public void Throw(Hit hit)
         {
@@ -122,7 +174,15 @@ namespace BloodyMess.Gore
                             (float)_random.NextDouble() * (_cfg.SprayMaxSize - _cfg.SprayMinSize))
                            * force;
 
-                Splash(spot, size, _cfg.SprayOpacity * (0.75f + (float)_random.NextDouble() * 0.25f));
+                // QUEUED, NOT PLACED. See the note on _pending: doing the ground probe for
+                // every drop inline is what was spiking the frame and making euphoria deaths
+                // look broken.
+                _pending.Enqueue(new Pending
+                {
+                    At = spot,
+                    Size = size,
+                    Opacity = _cfg.SprayOpacity * (0.75f + (float)_random.NextDouble() * 0.25f)
+                });
             }
         }
 
@@ -186,7 +246,7 @@ namespace BloodyMess.Gore
                         Refused++;
                     }
 
-                    if (_cfg.SprayMist && _random.NextDouble() < 0.35)
+                    if (_cfg.SprayMist && _random.NextDouble() < _cfg.SprayMistChance)
                     {
                         _decals.OnSurface(Decals.Lane.Splatter, DecalType.SplattersBloodMist,
                                           wall.HitPosition, wall.SurfaceNormal,
@@ -230,6 +290,20 @@ namespace BloodyMess.Gore
             if (handle == 0) { Refused++; return; }
 
             Placed++;
+
+            // MIST OVER THE TOP, on the ground as well as on walls. It is the fine halo that
+            // makes a splatter read as blood that arrived at speed rather than as a sticker,
+            // and it costs no extra raycast -- the ground under this point has just been
+            // found, so it is reused.
+            if (_cfg.SprayMist && _random.NextDouble() < _cfg.SprayMistChance)
+            {
+                _decals.OnGround(Decals.Lane.Splatter, DecalType.SplattersBloodMist,
+                                 ground.Position,
+                                 (float)(_random.NextDouble() * Math.PI * 2.0),
+                                 size * 2.6f, size * 2.6f,
+                                 opacity * 0.4f, Blood);
+            }
+
             Register(ground.Position, size);
         }
 

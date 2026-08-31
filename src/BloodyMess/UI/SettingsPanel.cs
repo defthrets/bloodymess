@@ -321,9 +321,10 @@ namespace BloodyMess.UI
             // Reading these three numbers after a shot says which, immediately, instead of
             // guessing at it from a screenshot.
             Draw.Text("laid " + _spray.Placed +
+                      "   queued " + _spray.Queued +
                       "   no-ground " + _spray.NoGround +
                       "   over-budget " + _spray.Refused +
-                      "   wet spots " + _field.Count,
+                      "   wet " + _field.Count,
                       Left + 0.008f, Top - RowHeight * 1.1f, 0.24f,
                       Color.FromArgb(170, 150, 150, 150));
 

@@ -161,8 +161,22 @@ namespace BloodyMess.Core
         /// <summary>Adds the fine mist decal over the top of the splatter.</summary>
         public bool SprayMist = true;
 
-        /// <summary>Blood particle burst at the wound. The visible part of a hit.</summary>
-        public bool SprayParticles = true;
+        /// <summary>
+        /// How often a splatter gets a mist halo over it, from 0 to 1.
+        ///
+        /// The mist is the cheap part of this mod and the part that reads best: it is drawn on
+        /// ground already found for the splatter underneath it, so it costs no extra raycast.
+        /// </summary>
+        public float SprayMistChance = 0.85f;
+
+        /// <summary>
+        /// Our OWN extra blood particle burst at the wound, on top of the game's.
+        ///
+        /// OFF BY DEFAULT. The game already throws its own blood particles on a hit; adding a
+        /// second burst over the top is what made the spray read as far too much. The mist and
+        /// the blood on the ground carry the mod now, and the airborne part stays stock.
+        /// </summary>
+        public bool SprayParticles = false;
 
         // ---- Pools -----------------------------------------------------------
 
@@ -286,6 +300,19 @@ namespace BloodyMess.Core
 
         /// <summary>Nothing is drawn further than this from the camera, in metres.</summary>
         public float DecalRange = 65f;
+
+        /// <summary>
+        /// Ground probes allowed per frame.
+        ///
+        /// THE FRAME-TIME SAFETY, and the counterpart to the decal budget. Every ground
+        /// splatter costs one shape test to find the surface under it; done all at once, a
+        /// single kill could fire three dozen inside one tick. That does not error -- it
+        /// spikes the frame, and GTA's euphoria ragdolls are framerate-sensitive, so the
+        /// symptom is peds dying strangely rather than anything that looks like a decal
+        /// problem. Six per frame drains a whole kill's worth over about a quarter of a
+        /// second and is invisible to look at.
+        /// </summary>
+        public int ProbesPerFrame = 6;
 
         /// <summary>
         /// The lifetime passed straight to ADD_DECAL.
@@ -413,6 +440,8 @@ namespace BloodyMess.Core
                 cfg.SprayOpacity = ini.GetFloat("Spray", "Opacity", cfg.SprayOpacity, 0.05f, 1f);
                 cfg.SprayOnWalls = ini.GetBool("Spray", "OnWalls", cfg.SprayOnWalls);
                 cfg.SprayMist = ini.GetBool("Spray", "Mist", cfg.SprayMist);
+                cfg.SprayMistChance = ini.GetFloat("Spray", "MistChance",
+                                                   cfg.SprayMistChance, 0f, 1f);
                 cfg.SprayParticles = ini.GetBool("Spray", "Particles", cfg.SprayParticles);
 
                 cfg.PoolsEnabled = ini.GetBool("Pools", "Enabled", cfg.PoolsEnabled);
@@ -452,6 +481,8 @@ namespace BloodyMess.Core
                 cfg.MaxPools = ini.GetInt("Budget", "MaxPools", cfg.MaxPools, 0, 300);
                 cfg.DecalsPerSecond = ini.GetInt("Budget", "PerSecond", cfg.DecalsPerSecond, 1, 200);
                 cfg.DecalRange = ini.GetFloat("Budget", "Range", cfg.DecalRange, 5f, 300f);
+                cfg.ProbesPerFrame = ini.GetInt("Budget", "ProbesPerFrame",
+                                                cfg.ProbesPerFrame, 1, 64);
                 cfg.DecalTimeout = ini.GetFloat("Budget", "Timeout", cfg.DecalTimeout, 0f, 1000000f);
 
                 cfg.BiggerBloodParticles = ini.GetBool("Game", "BiggerBloodParticles",
