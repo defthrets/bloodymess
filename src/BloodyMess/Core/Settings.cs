@@ -120,8 +120,8 @@ namespace BloodyMess.Core
         // MUCH SMALLER THAN 0.1.0, which shipped 0.12-0.55 and then multiplied that by a
         // damage factor capped at 2.5 and again by the gore level -- a kill produced splatters
         // nearly two metres across. See Spray for the damage curve that went with it.
-        public float SprayMinSize = 0.06f;
-        public float SprayMaxSize = 0.20f;
+        public float SprayMinSize = 0.10f;
+        public float SprayMaxSize = 0.32f;
         public float SprayOpacity = 0.85f;
 
         /// <summary>Whether spray is allowed to land on walls, not just the ground.</summary>
@@ -303,9 +303,9 @@ namespace BloodyMess.Core
         /// Defaults are a dark arterial red. Raise BloodRed towards 1 for brighter, more
         /// cartoonish blood; raise green and blue together to make it browner and older.
         /// </summary>
-        public float BloodRed = 0.42f;
-        public float BloodGreen = 0.02f;
-        public float BloodBlue = 0.02f;
+        public float BloodRed = 0.55f;
+        public float BloodGreen = 0.03f;
+        public float BloodBlue = 0.03f;
 
         // ---- loading ---------------------------------------------------------
 

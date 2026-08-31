@@ -38,6 +38,22 @@ namespace BloodyMess.Gore
         /// <summary>The configured blood colour. Splatter textures are greyscale without it.</summary>
         private Tint Blood => new Tint(_cfg.BloodRed, _cfg.BloodGreen, _cfg.BloodBlue);
 
+        // ---- counters, for working out why nothing is appearing ---------------
+        //
+        // These exist because "no blood on the ground" has three completely different
+        // causes that look identical in game: nothing was attempted, the budget refused
+        // it, or the ground could not be found under it. The settings menu shows these
+        // live, so the answer takes one keypress instead of a guess.
+
+        /// <summary>Ground and wall splatters actually laid this session.</summary>
+        public int Placed { get; private set; }
+
+        /// <summary>Splatters dropped because no ground could be found beneath them.</summary>
+        public int NoGround { get; private set; }
+
+        /// <summary>Splatters dropped because the decal budget or range said no.</summary>
+        public int Refused { get; private set; }
+
         public void Throw(Hit hit)
         {
             if (!_cfg.SprayEnabled) return;
@@ -73,7 +89,19 @@ namespace BloodyMess.Gore
         private void One(Hit hit, float force)
         {
             var direction = Scatter(hit.Direction, _cfg.SpraySpread);
-            var range = _cfg.SprayRange * (0.5f + (float)_random.NextDouble() * 0.5f);
+
+            // HOW FAR THE DROP FLIES, AND THIS WAS THE BUG THAT MADE THE MOD LOOK DEAD.
+            //
+            // 0.1.x used SprayRange * (0.5..1.0), so every single ground splatter landed
+            // between 2.25 and 4.5 metres behind the target and there was never anything
+            // near the body. You would shoot somebody, look at them, and see clean ground --
+            // the blood was real, and three metres away behind you.
+            //
+            // The curve is now weighted towards the near field: squaring a 0..1 random
+            // clusters most drops close to the wound and still throws a few out to full
+            // range, which is how spatter actually falls.
+            var roll = (float)_random.NextDouble();
+            var range = 0.3f + roll * roll * (_cfg.SprayRange - 0.3f);
 
             // Size is damage-scaled but NOT level-scaled. The gore level decides how MANY
             // splatters there are; letting it scale their size as well compounded the two and
@@ -106,8 +134,16 @@ namespace BloodyMess.Gore
                         ? DecalType.SplattersBloodDir
                         : Pick(DecalType.SplattersBlood, DecalType.SplattersBlood2);
 
-                    _decals.OnSurface(Decals.Lane.Splatter, type, wall.HitPosition,
-                                      wall.SurfaceNormal, size, size * 1.35f, opacity, Blood);
+                    if (_decals.OnSurface(Decals.Lane.Splatter, type, wall.HitPosition,
+                                          wall.SurfaceNormal, size, size * 1.35f,
+                                          opacity, Blood) != 0)
+                    {
+                        Placed++;
+                    }
+                    else
+                    {
+                        Refused++;
+                    }
 
                     if (_cfg.SprayMist && _random.NextDouble() < 0.35)
                     {
@@ -137,14 +173,22 @@ namespace BloodyMess.Gore
         private void Splash(Vector3 near, float size, float opacity)
         {
             var ground = Ground.Probe(near);
-            if (!ground.Found) return;
+
+            if (!ground.Found)
+            {
+                NoGround++;
+                return;
+            }
 
             var type = Pick(DecalType.SplattersBlood, DecalType.SplattersBlood2);
 
-            _decals.OnGround(Decals.Lane.Splatter, type, ground.Position,
-                             (float)(_random.NextDouble() * Math.PI * 2.0),
-                             size * 1.2f, size * 1.2f, opacity, Blood);
+            var handle = _decals.OnGround(Decals.Lane.Splatter, type, ground.Position,
+                                          (float)(_random.NextDouble() * Math.PI * 2.0),
+                                          size * 1.2f, size * 1.2f, opacity, Blood);
 
+            if (handle == 0) { Refused++; return; }
+
+            Placed++;
             Register(ground.Position, size);
         }
 
@@ -157,9 +201,13 @@ namespace BloodyMess.Gore
         /// </summary>
         private void Register(Vector3 position, float size)
         {
-            if (size < 0.18f) return;
+            // THRESHOLD LOWERED FROM 0.18. Splatter sizes were cut hard in 0.1.1 to stop
+            // them being dinner plates, which quietly pushed almost every splatter under
+            // the old cut-off -- so nothing registered as wet and the footprints, which are
+            // the whole point of the mod, had nothing to pick up.
+            if (size < 0.09f) return;
 
-            _field.Add(position, size * 0.6f, _cfg.FootprintWetSeconds);
+            _field.Add(position, Math.Max(0.12f, size * 0.7f), _cfg.FootprintWetSeconds);
         }
 
         /// <summary>

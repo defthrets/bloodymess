@@ -73,7 +73,7 @@ namespace BloodyMess
             _footprints = new Footprints(_cfg, _decals, _field);
             _wheels = new Wheels(_cfg, _decals, _field);
 
-            _settings = new SettingsPanel(_cfg, _decals, _field, _footprints, _globals);
+            _settings = new SettingsPanel(_cfg, _decals, _field, _footprints, _globals, _spray);
 
             Interval = 0;
             Tick += OnTick;

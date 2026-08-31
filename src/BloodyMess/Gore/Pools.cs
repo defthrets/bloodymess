@@ -125,10 +125,14 @@ namespace BloodyMess.Gore
                 size, size * 0.85f,
                 // A porous surface soaks it up, so it never looks as wet as tarmac does.
                 ground.Porous ? 0.75f : 0.95f,
-                // NOT TINTED. The pool textures -- fxdecal_blood_pool and friends -- are
-                // properly coloured art, unlike the greyscale splatter masks, so tinting them
-                // would only darken art that is already right.
-                Tint.None);
+                // TINTED AFTER ALL. Reading the game's own decals.dat settles it: id 9001 has
+                // FOUR texture variants and the first is `pool_solid`, a colourless generic
+                // pool shared with water and oil -- so an untinted pool comes out WHITE
+                // whenever the engine picks that one. 9006 is `pool_porous_solid`, also
+                // colourless. Tinting costs nothing on the variants that are already red
+                // (it darkens them slightly, which reads as older blood) and is the only
+                // thing that makes the grey ones look like blood at all.
+                new Tint(_cfg.BloodRed, _cfg.BloodGreen, _cfg.BloodBlue));
 
             if (handle == 0)
             {

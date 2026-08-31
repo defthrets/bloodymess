@@ -60,6 +60,7 @@ namespace BloodyMess.UI
         private readonly BloodField _field;
         private readonly Footprints _footprints;
         private readonly Globals _globals;
+        private readonly Spray _spray;
 
         private readonly List<Option> _options = new List<Option>();
 
@@ -82,13 +83,14 @@ namespace BloodyMess.UI
         private int _flashUntil;
 
         public SettingsPanel(Settings cfg, Decals decals, BloodField field,
-                             Footprints footprints, Globals globals)
+                             Footprints footprints, Globals globals, Spray spray)
         {
             _cfg = cfg;
             _decals = decals;
             _field = field;
             _footprints = footprints;
             _globals = globals;
+            _spray = spray;
 
             BuildOptions();
         }
@@ -250,6 +252,19 @@ namespace BloodyMess.UI
                       _decals.LivePools + "/" + _cfg.MaxPools + " pools",
                       Left + Width - 0.008f, Top - RowHeight * 1.8f, 0.28f,
                       Color.FromArgb(190, 170, 170, 170), 4, false, true);
+
+            // THE LINE THAT ANSWERS "why is there no blood on the ground".
+            //
+            // Three completely different failures look identical in game: nothing was
+            // attempted, the budget refused it, or no ground was found under the drop.
+            // Reading these three numbers after a shot says which, immediately, instead of
+            // guessing at it from a screenshot.
+            Draw.Text("laid " + _spray.Placed +
+                      "   no-ground " + _spray.NoGround +
+                      "   over-budget " + _spray.Refused +
+                      "   wet spots " + _field.Count,
+                      Left + 0.008f, Top - RowHeight * 1.1f, 0.24f,
+                      Color.FromArgb(170, 150, 150, 150));
 
             var y = Top;
 
