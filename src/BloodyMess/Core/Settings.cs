@@ -59,6 +59,19 @@ namespace BloodyMess.Core
         /// </summary>
         public Keys MenuKey = Keys.F10;
 
+        /// <summary>
+        /// Whether the menu can also be driven from a controller.
+        ///
+        /// Opened by HOLDING the View/Back button (the one that shows the player list
+        /// online, and does nothing useful in single player). Held rather than tapped so it
+        /// cannot fire by accident, and it is the only face button on the pad that no
+        /// on-foot action is bound to.
+        /// </summary>
+        public bool ControllerMenu = true;
+
+        /// <summary>Milliseconds the View/Back button must be held to open the menu.</summary>
+        public int ControllerHoldMs = 350;
+
         // ---- Intensity -------------------------------------------------------
 
         public GoreLevel Level = GoreLevel.Mess;
@@ -109,7 +122,18 @@ namespace BloodyMess.Core
         public bool SprayEnabled = true;
 
         /// <summary>Splatter decals thrown per hit, before scaling.</summary>
-        public int SprayPerHit = 3;
+        public int SprayPerHit = 5;
+
+        /// <summary>
+        /// Splatters dropped straight down around the victim on every hit.
+        ///
+        /// SEPARATE FROM THE THROWN SPRAY ON PURPOSE. The thrown spray follows the shot line
+        /// and lands wherever that takes it, which can be several metres away; this is the
+        /// blood that simply falls out of the wound and hits the floor where the ped is
+        /// standing. It is what makes the ground under somebody you have just shot actually
+        /// look like it, rather than being clean while a fan of drops sits behind them.
+        /// </summary>
+        public int SprayGroundDrops = 4;
 
         /// <summary>How far behind the ped the spray is allowed to reach, in metres.</summary>
         public float SprayRange = 4.5f;
@@ -237,14 +261,21 @@ namespace BloodyMess.Core
         // not throw -- decals simply stop appearing, or the game starts recycling the wrong
         // ones -- which is a bug that looks like the mod not working.
 
-        /// <summary>Live splatter, spray, drip and print decals allowed at once.</summary>
-        public int MaxSplatters = 140;
+        /// <summary>
+        /// Live splatter, spray, drip and print decals allowed at once.
+        ///
+        /// THIS IS THE NO-PATCH FALLBACK, deliberately. It is what runs when there is no ini,
+        /// and it has to survive a stock decal pool of 256-512 slots shared with the game's own
+        /// bullet holes and tyre marks. The shipped ini sets it far higher, because a decal
+        /// limit patch takes the pool to 2048 and 140 leaves nine tenths of it unused.
+        /// </summary>
+        public int MaxSplatters = 220;
 
         /// <summary>Live pools allowed at once. Separate lane, so a firefight cannot evict them.</summary>
-        public int MaxPools = 40;
+        public int MaxPools = 50;
 
         /// <summary>New decals allowed per second, however busy things get.</summary>
-        public int DecalsPerSecond = 30;
+        public int DecalsPerSecond = 40;
 
         /// <summary>Nothing is drawn further than this from the camera, in metres.</summary>
         public float DecalRange = 65f;
@@ -327,6 +358,9 @@ namespace BloodyMess.Core
                 cfg.AnnounceOnLoad = ini.GetBool("General", "AnnounceOnLoad", cfg.AnnounceOnLoad);
                 cfg.LogLevel = ParseLevel(ini.GetString("General", "LogLevel", "Info"), cfg.LogLevel);
                 cfg.MenuKey = ini.GetKey("General", "MenuKey", cfg.MenuKey);
+                cfg.ControllerMenu = ini.GetBool("General", "ControllerMenu", cfg.ControllerMenu);
+                cfg.ControllerHoldMs = ini.GetInt("General", "ControllerHoldMs",
+                                                  cfg.ControllerHoldMs, 100, 3000);
 
                 cfg.Level = ParseGoreLevel(ini.GetString("Intensity", "Level", "Mess"), cfg.Level);
                 cfg.Multiplier = ini.GetFloat("Intensity", "Multiplier", cfg.Multiplier, 0.1f, 5f);
@@ -338,7 +372,9 @@ namespace BloodyMess.Core
                 cfg.PlayerWounds = ini.GetBool("Wounds", "PlayerWounds", cfg.PlayerWounds);
 
                 cfg.SprayEnabled = ini.GetBool("Spray", "Enabled", cfg.SprayEnabled);
-                cfg.SprayPerHit = ini.GetInt("Spray", "PerHit", cfg.SprayPerHit, 0, 16);
+                cfg.SprayPerHit = ini.GetInt("Spray", "PerHit", cfg.SprayPerHit, 0, 24);
+                cfg.SprayGroundDrops = ini.GetInt("Spray", "GroundDrops",
+                                                  cfg.SprayGroundDrops, 0, 16);
                 cfg.SprayRange = ini.GetFloat("Spray", "Range", cfg.SprayRange, 0.5f, 15f);
                 cfg.SpraySpread = ini.GetFloat("Spray", "Spread", cfg.SpraySpread, 0f, 1.5f);
                 cfg.SprayMinSize = ini.GetFloat("Spray", "MinSize", cfg.SprayMinSize, 0.02f, 2f);

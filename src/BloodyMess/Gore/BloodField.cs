@@ -31,10 +31,15 @@ namespace BloodyMess.Gore
         /// <summary>
         /// The hard cap on remembered spots.
         ///
-        /// Well above what a firefight produces, and here so that a very long session cannot
-        /// turn a distance test into a performance problem. Oldest goes first.
+        /// Here so that a very long session cannot turn a distance test into a performance
+        /// problem. Oldest goes first.
+        ///
+        /// RAISED FROM 220, which a single street firefight was already reaching (131 spots
+        /// off one exchange). At the cap the oldest wet blood is forgotten while its decal is
+        /// still on the ground, so you can walk through a visible pool and pick nothing up --
+        /// the footprints just stop working, with no clue as to why.
         /// </summary>
-        private const int MaxSpots = 220;
+        private const int MaxSpots = 420;
 
         private readonly List<Spot> _spots = new List<Spot>();
         private int _lastSweep;

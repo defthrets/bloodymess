@@ -73,6 +73,10 @@ namespace BloodyMess.UI
         private bool _menuKeyDown;
         private bool _upDown, _downDown, _leftDown, _rightDown, _enterDown, _backDown;
 
+        /// <summary>When the controller's View/Back button went down, and whether it fired.</summary>
+        private int _padHeldSince;
+        private bool _padConsumed;
+
         /// <summary>Game time of the last change, so the write waits for the player to stop.</summary>
         private int _lastChange;
 
@@ -99,7 +103,7 @@ namespace BloodyMess.UI
 
         public void Update()
         {
-            if (Toggled())
+            if (Toggled() || PadToggled())
             {
                 _open = !_open;
                 if (!_open) Flush();
@@ -142,17 +146,67 @@ namespace BloodyMess.UI
 
         private void Input()
         {
-            if (Edge(Keys.Up, ref _upDown)) Move(-1);
-            if (Edge(Keys.Down, ref _downDown)) Move(1);
-            if (Edge(Keys.Left, ref _leftDown)) Change(-1);
-            if (Edge(Keys.Right, ref _rightDown)) Change(1);
-            if (Edge(Keys.Enter, ref _enterDown)) Activate();
+            if (Edge(Keys.Up, ref _upDown) || Pad(GTA.Control.FrontendUp, GTA.Control.PhoneUp)) Move(-1);
+            if (Edge(Keys.Down, ref _downDown) || Pad(GTA.Control.FrontendDown, GTA.Control.PhoneDown)) Move(1);
+            if (Edge(Keys.Left, ref _leftDown) || Pad(GTA.Control.FrontendLeft, GTA.Control.PhoneLeft)) Change(-1);
+            if (Edge(Keys.Right, ref _rightDown) || Pad(GTA.Control.FrontendRight, GTA.Control.PhoneRight)) Change(1);
+            if (Edge(Keys.Enter, ref _enterDown) || Pad(GTA.Control.FrontendAccept, GTA.Control.PhoneSelect)) Activate();
 
-            if (Edge(Keys.Back, ref _backDown))
+            if (Edge(Keys.Back, ref _backDown) || Pad(GTA.Control.FrontendCancel, GTA.Control.PhoneCancel))
             {
                 _open = false;
                 Flush();
             }
+        }
+
+        /// <summary>
+        /// A controller button, checked against BOTH of the game's names for the d-pad.
+        ///
+        /// The d-pad reports as PhoneUp/Down/Left/Right (172-175) in ordinary gameplay and as
+        /// FrontendUp/Down/Left/Right (187-190) in menu context, and which one a given frame
+        /// answers to depends on what else has claimed the input. Reading both costs one extra
+        /// native call and removes the guess entirely.
+        /// </summary>
+        private static bool Pad(GTA.Control a, GTA.Control b)
+        {
+            try { return Game.IsControlJustPressed(a) || Game.IsControlJustPressed(b); }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// Opens and closes the menu from a controller: HOLD the View/Back button.
+        ///
+        /// Held rather than tapped so a stray press cannot open it mid-firefight, and fired
+        /// once per hold rather than repeatedly -- without the consumed flag it would toggle
+        /// every frame for as long as the button is down, which reads as the menu flickering.
+        /// </summary>
+        private bool PadToggled()
+        {
+            if (!_cfg.ControllerMenu) return false;
+
+            bool down;
+            try { down = Game.IsControlPressed(GTA.Control.MultiplayerInfo); }
+            catch { return false; }
+
+            if (!down)
+            {
+                _padHeldSince = 0;
+                _padConsumed = false;
+                return false;
+            }
+
+            if (_padConsumed) return false;
+
+            if (_padHeldSince == 0)
+            {
+                _padHeldSince = Game.GameTime;
+                return false;
+            }
+
+            if (Game.GameTime - _padHeldSince < _cfg.ControllerHoldMs) return false;
+
+            _padConsumed = true;
+            return true;
         }
 
         private static bool Edge(Keys key, ref bool wasDown)
@@ -225,7 +279,14 @@ namespace BloodyMess.UI
             {
                 GTA.Control.Phone, GTA.Control.SelectWeapon, GTA.Control.Attack,
                 GTA.Control.Attack2, GTA.Control.Aim, GTA.Control.MeleeAttack1,
-                GTA.Control.CharacterWheel, GTA.Control.VehicleCinCam
+                GTA.Control.CharacterWheel, GTA.Control.VehicleCinCam,
+
+                // The controller inputs the menu is driving with. Without these the d-pad
+                // still works the phone and the weapon wheel underneath the open menu.
+                GTA.Control.PhoneUp, GTA.Control.PhoneDown,
+                GTA.Control.PhoneLeft, GTA.Control.PhoneRight,
+                GTA.Control.PhoneSelect, GTA.Control.PhoneCancel,
+                GTA.Control.MultiplayerInfo
             };
 
             foreach (var control in blocked)

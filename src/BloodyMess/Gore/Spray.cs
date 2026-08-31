@@ -74,14 +74,55 @@ namespace BloodyMess.Gore
             var count = (int)Math.Round(_cfg.SprayPerHit * _cfg.Scale * profile.Spray * force);
 
             if (hit.Headshot) count += 2;
-            if (count <= 0) return;
 
-            count = Math.Min(count, 14);
+            count = Math.Min(count, 22);
 
             for (var i = 0; i < count; i++)
             {
-                if (!_decals.CanAfford(hit.Position)) return;
+                if (!_decals.CanAfford(hit.Position)) break;
                 One(hit, force);
+            }
+
+            Underfoot(hit, force);
+        }
+
+        /// <summary>
+        /// The blood that just falls out of the wound onto the floor beneath them.
+        ///
+        /// Runs on EVERY hit, independent of the thrown spray and independent of the shot
+        /// line, because that is the half of it that does not care which way the round was
+        /// travelling. Without this the ground under a body can be perfectly clean while a
+        /// fan of drops sits several metres behind it, which is exactly how the first few
+        /// versions looked and why the mod read as doing nothing.
+        /// </summary>
+        private void Underfoot(Hit hit, float force)
+        {
+            var drops = (int)Math.Round(_cfg.SprayGroundDrops * _cfg.Scale);
+            if (drops <= 0) return;
+
+            drops = Math.Min(drops, 14);
+
+            var feet = hit.Ped.Position;
+
+            for (var i = 0; i < drops; i++)
+            {
+                if (!_decals.CanAfford(feet)) return;
+
+                // Tight scatter around the ped, biased inwards. A ring would look like a
+                // stencil; a cluster looks like something dripped.
+                var angle = _random.NextDouble() * Math.PI * 2.0;
+                var reach = (float)(_random.NextDouble() * _random.NextDouble() * 1.3);
+
+                var spot = feet + new Vector3(
+                    (float)(Math.Cos(angle) * reach),
+                    (float)(Math.Sin(angle) * reach),
+                    0f);
+
+                var size = (_cfg.SprayMinSize +
+                            (float)_random.NextDouble() * (_cfg.SprayMaxSize - _cfg.SprayMinSize))
+                           * force;
+
+                Splash(spot, size, _cfg.SprayOpacity * (0.75f + (float)_random.NextDouble() * 0.25f));
             }
         }
 
