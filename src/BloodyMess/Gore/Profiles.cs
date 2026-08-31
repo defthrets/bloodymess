@@ -39,6 +39,15 @@ namespace BloodyMess.Gore
 
         /// <summary>Multiplier on the particle effect size.</summary>
         public float FxScale = 1f;
+
+        /// <summary>
+        /// Chance from 0 to 1 that a headshot from this weapon takes the head off.
+        ///
+        /// PER WEAPON, because that is the whole interest of the feature. A shotgun at close
+        /// range should do it nearly every time and a pistol should be a rare, memorable
+        /// shot; one flat chance for everything makes it either constant or forgettable.
+        /// </summary>
+        public float HeadExplode = 0.3f;
     }
 
     /// <summary>
@@ -139,7 +148,13 @@ namespace BloodyMess.Gore
                 BigWound = fallback.BigWound,
                 DamagePack = fallback.DamagePack,
                 Spray = fallback.Spray,
-                FxScale = fallback.FxScale
+                FxScale = fallback.FxScale,
+
+                // Easy to forget when adding a field, and the failure is silent: without this
+                // line a group that omits headExplode falls back to the CLASS default rather
+                // than to the value being layered over, which is not what the per-field
+                // fallback below promises.
+                HeadExplode = fallback.HeadExplode
             };
 
             if (node == null || node.IsNull) return profile;
@@ -150,12 +165,15 @@ namespace BloodyMess.Gore
             profile.DamagePack = node["damagePack"].AsString(profile.DamagePack);
             profile.Spray = node["spray"].AsFloat(profile.Spray);
             profile.FxScale = node["fxScale"].AsFloat(profile.FxScale);
+            profile.HeadExplode = node["headExplode"].AsFloat(profile.HeadExplode);
 
             profile.Wound = ParseWound(node["wound"].AsString(""), profile.Wound, name, "wound");
             profile.BigWound = ParseWound(node["bigWound"].AsString(""), profile.BigWound, name, "bigWound");
 
             if (profile.Spray < 0f) profile.Spray = 0f;
             if (profile.FxScale < 0.05f) profile.FxScale = 0.05f;
+            if (profile.HeadExplode < 0f) profile.HeadExplode = 0f;
+            if (profile.HeadExplode > 1f) profile.HeadExplode = 1f;
 
             return profile;
         }
@@ -189,6 +207,7 @@ namespace BloodyMess.Gore
             _byGroup[WeaponGroup.Pistol] = new Profile
             {
                 Name = "Pistol",
+                HeadExplode = 0.25f,
                 Spray = 1f,
                 FxScale = 1f
             };
@@ -219,6 +238,7 @@ namespace BloodyMess.Gore
             _byGroup[WeaponGroup.Shotgun] = new Profile
             {
                 Name = "Shotgun",
+                HeadExplode = 0.9f,
                 EntryFx = "blood_entry_shotgun",
                 Wound = PedBloodDamage.ShotgunSmall,
                 BigWound = PedBloodDamage.ShotgunLarge,
@@ -230,6 +250,7 @@ namespace BloodyMess.Gore
             _byGroup[WeaponGroup.Sniper] = new Profile
             {
                 Name = "Sniper",
+                HeadExplode = 1f,
                 EntryFx = "blood_entry_sniper",
                 HeadFx = "blood_entry_head_sniper",
                 Wound = PedBloodDamage.BulletLarge,
@@ -241,6 +262,7 @@ namespace BloodyMess.Gore
             _byGroup[WeaponGroup.Heavy] = new Profile
             {
                 Name = "Heavy",
+                HeadExplode = 1f,
                 Wound = PedBloodDamage.ShotgunLarge,
                 BigWound = PedBloodDamage.ShotgunLarge,
                 DamagePack = "Explosion_Med",
@@ -273,6 +295,7 @@ namespace BloodyMess.Gore
             _byGroup[WeaponGroup.Unarmed] = new Profile
             {
                 Name = "Unarmed",
+                HeadExplode = 0f,
                 EntryFx = "blood_melee_punch",
                 ExitFx = "blood_melee_punch",
                 HeadFx = "blood_nose",
@@ -287,6 +310,7 @@ namespace BloodyMess.Gore
             _byGroup[WeaponGroup.Stungun] = new Profile
             {
                 Name = "Stungun",
+                HeadExplode = 0f,
                 EntryFx = "blood_stungun",
                 ExitFx = "",
                 HeadFx = "blood_stungun",

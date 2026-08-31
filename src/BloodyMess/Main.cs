@@ -42,6 +42,7 @@ namespace BloodyMess
 
         private readonly Globals _globals;
         private readonly Wounds _wounds;
+        private readonly Heads _heads;
         private readonly Spray _spray;
         private readonly Pools _pools;
         private readonly Drips _drips;
@@ -67,6 +68,7 @@ namespace BloodyMess
 
             _globals = new Globals(_cfg);
             _wounds = new Wounds(_cfg, _profiles);
+            _heads = new Heads(_cfg, _profiles);
             _spray = new Spray(_cfg, _decals, _profiles, _field);
             _pools = new Pools(_cfg, _decals, _field);
             _drips = new Drips(_cfg, _decals, _field);
@@ -119,7 +121,12 @@ namespace BloodyMess
 
                 foreach (var hit in _victims.Hits)
                 {
-                    _wounds.Apply(hit);
+                    // BEFORE the wounds, so a head that is about to be removed does not get
+                    // blood decals stamped onto it first.
+                    var headless = _heads.Try(hit);
+
+                    if (!headless) _wounds.Apply(hit);
+
                     _spray.Throw(hit);
                 }
 
@@ -210,6 +217,7 @@ namespace BloodyMess
             try { _settings.Shutdown(); } catch (Exception ex) { Log.Error("Settings shutdown", ex); }
             try { _footprints.Shutdown(); } catch (Exception ex) { Log.Error("Footprint shutdown", ex); }
             try { _wounds.Shutdown(); } catch (Exception ex) { Log.Error("Particle shutdown", ex); }
+            try { _heads.Shutdown(); } catch (Exception ex) { Log.Error("Head shutdown", ex); }
             try { _globals.Restore(); } catch (Exception ex) { Log.Error("Restoring engine settings", ex); }
             try { _victims.Clear(); } catch (Exception ex) { Log.Error("Clearing victims", ex); }
             try { _wheels.Clear(); } catch (Exception ex) { Log.Error("Clearing vehicles", ex); }

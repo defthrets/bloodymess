@@ -361,6 +361,34 @@ namespace BloodyMess.Core
         /// <summary>Novelty. Green.</summary>
         public bool AlienBlood = false;
 
+        // ---- Heads -----------------------------------------------------------
+
+        /// <summary>
+        /// Whether a headshot can take the head clean off.
+        ///
+        /// This is the ONE piece of dismemberment GTA V supports. There are no natives for
+        /// severing anything else, and no severed-head prop in the game files, so the head is
+        /// removed and gore replaces it rather than a head falling and rolling away.
+        /// </summary>
+        public bool HeadsEnabled = true;
+
+        /// <summary>
+        /// A global multiplier on the per-weapon chance in gore.json.
+        ///
+        /// 1.0 leaves each weapon at its own odds; 0.5 halves all of them; 0 is the same as
+        /// switching the feature off.
+        /// </summary>
+        public float HeadsChance = 1f;
+
+        /// <summary>Health points a head hit has to do before it can take the head off.</summary>
+        public float HeadsMinDamage = 25f;
+
+        /// <summary>Whether it can happen to the player as well.</summary>
+        public bool HeadsIncludePlayer = false;
+
+        /// <summary>The spurt from the neck afterwards.</summary>
+        public bool HeadsNeckEffect = true;
+
         // ---- Appearance ------------------------------------------------------
 
         /// <summary>
@@ -498,6 +526,12 @@ namespace BloodyMess.Core
                 cfg.ShotgunDecals = ini.GetBool("Game", "ShotgunDecals", cfg.ShotgunDecals);
                 cfg.ClownBlood = ini.GetBool("Game", "ClownBlood", cfg.ClownBlood);
                 cfg.AlienBlood = ini.GetBool("Game", "AlienBlood", cfg.AlienBlood);
+
+                cfg.HeadsEnabled = ini.GetBool("Heads", "Enabled", cfg.HeadsEnabled);
+                cfg.HeadsChance = ini.GetFloat("Heads", "Chance", cfg.HeadsChance, 0f, 1f);
+                cfg.HeadsMinDamage = ini.GetFloat("Heads", "MinDamage", cfg.HeadsMinDamage, 0f, 500f);
+                cfg.HeadsIncludePlayer = ini.GetBool("Heads", "IncludePlayer", cfg.HeadsIncludePlayer);
+                cfg.HeadsNeckEffect = ini.GetBool("Heads", "NeckEffect", cfg.HeadsNeckEffect);
 
                 cfg.BloodRed = ini.GetFloat("Appearance", "BloodRed", cfg.BloodRed, 0f, 1f);
                 cfg.BloodGreen = ini.GetFloat("Appearance", "BloodGreen", cfg.BloodGreen, 0f, 1f);

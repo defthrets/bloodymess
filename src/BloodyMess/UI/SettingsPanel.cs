@@ -465,6 +465,10 @@ namespace BloodyMess.UI
                    () => _cfg.PoolsEnabled, v => _cfg.PoolsEnabled = v);
             Switch("Trails from the wounded", "Drips", "Enabled",
                    () => _cfg.DripsEnabled, v => _cfg.DripsEnabled = v);
+            Switch("Heads come off", "Heads", "Enabled",
+                   () => _cfg.HeadsEnabled, v => _cfg.HeadsEnabled = v);
+            Number("...how often", "Heads", "Chance",
+                   () => _cfg.HeadsChance, v => _cfg.HeadsChance = v, 0f, 1f, 0.05f);
 
             Heading("Footprints");
 

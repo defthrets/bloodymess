@@ -60,6 +60,9 @@ namespace BloodyMess.Gore
         public bool NextFootIsLeft;
 
         public bool IsPlayer;
+
+        /// <summary>Their head has already been taken off. Stops it happening twice.</summary>
+        public bool HeadGone;
     }
 
     /// <summary>One hit, worked out once and handed to every system that wants to react to it.</summary>
@@ -92,6 +95,14 @@ namespace BloodyMess.Gore
 
         /// <summary>What did it. Unarmed when nothing could be worked out.</summary>
         public WeaponGroup Group;
+
+        /// <summary>
+        /// The exact weapon, for natives that want a hash rather than a group.
+        ///
+        /// EXPLODE_PED_HEAD takes one and picks its gore effect from it, so a shotgun and a
+        /// pistol produce visibly different bursts. Zero when nothing could be worked out.
+        /// </summary>
+        public uint WeaponHash;
     }
 
     /// <summary>
@@ -258,7 +269,8 @@ namespace BloodyMess.Gore
                 Ped = ped,
                 Damage = lost,
                 Fatal = fatal,
-                Group = WeaponUsed(ped)
+                Group = WeaponUsed(ped, out var weaponHash),
+                WeaponHash = weaponHash
             };
 
             Locate(ref hit, ped);
@@ -415,8 +427,10 @@ namespace BloodyMess.Gore
         /// is the honest guess -- this mod exists for the player's gunfights, and when somebody
         /// else did it the worst case is a pistol-sized mess instead of a shotgun-sized one.
         /// </summary>
-        private static WeaponGroup WeaponUsed(Ped ped)
+        private static WeaponGroup WeaponUsed(Ped ped, out uint weaponHash)
         {
+            weaponHash = 0;
+
             try
             {
                 if (ped.IsDead)
@@ -425,6 +439,7 @@ namespace BloodyMess.Gore
 
                     if (cause != 0)
                     {
+                        weaponHash = cause;
                         var group = Function.Call<int>(Hash.GET_WEAPONTYPE_GROUP, cause);
                         if (group != 0) return (WeaponGroup)group;
                     }
@@ -434,7 +449,9 @@ namespace BloodyMess.Gore
 
                 if (player != null && player.Exists() && player.Handle != ped.Handle)
                 {
-                    return player.Weapons.Current.Group;
+                    var current = player.Weapons.Current;
+                    if (weaponHash == 0) weaponHash = (uint)current.Hash;
+                    return current.Group;
                 }
             }
             catch
