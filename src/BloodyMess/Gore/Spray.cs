@@ -35,6 +35,9 @@ namespace BloodyMess.Gore
             _field = field;
         }
 
+        /// <summary>The configured blood colour. Splatter textures are greyscale without it.</summary>
+        private Tint Blood => new Tint(_cfg.BloodRed, _cfg.BloodGreen, _cfg.BloodBlue);
+
         public void Throw(Hit hit)
         {
             if (!_cfg.SprayEnabled) return;
@@ -46,7 +49,12 @@ namespace BloodyMess.Gore
             // Damage scales the count as well as the settings do, so a graze is a graze and a
             // rifle round is not. Capped so that one absurd hit -- a tank shell, a fall from a
             // helicopter -- cannot empty the whole budget on its own.
-            var force = Math.Min(2.5f, 0.5f + hit.Damage / 45f);
+            //
+            // THE CURVE IS DELIBERATELY GENTLE. 0.1.0 used damage/45 capped at 2.5, and since
+            // a fatal hit reports the victim's whole remaining health -- around 200 -- every
+            // single kill pinned that cap. All deaths therefore produced maximum-size spray,
+            // which is exactly what "way too big" looked like in practice.
+            var force = Math.Min(1.6f, 0.45f + hit.Damage / 120f);
             var count = (int)Math.Round(_cfg.SprayPerHit * _cfg.Scale * profile.Spray * force);
 
             if (hit.Headshot) count += 2;
@@ -67,9 +75,12 @@ namespace BloodyMess.Gore
             var direction = Scatter(hit.Direction, _cfg.SpraySpread);
             var range = _cfg.SprayRange * (0.5f + (float)_random.NextDouble() * 0.5f);
 
+            // Size is damage-scaled but NOT level-scaled. The gore level decides how MANY
+            // splatters there are; letting it scale their size as well compounded the two and
+            // was the other half of why 0.1.0 drew dinner plates.
             var size = _cfg.SprayMinSize +
                        (float)_random.NextDouble() * (_cfg.SprayMaxSize - _cfg.SprayMinSize);
-            size *= force * (0.6f + _cfg.Scale * 0.3f);
+            size *= force;
 
             var opacity = _cfg.SprayOpacity * (0.7f + (float)_random.NextDouble() * 0.3f);
 
@@ -96,13 +107,13 @@ namespace BloodyMess.Gore
                         : Pick(DecalType.SplattersBlood, DecalType.SplattersBlood2);
 
                     _decals.OnSurface(Decals.Lane.Splatter, type, wall.HitPosition,
-                                      wall.SurfaceNormal, size, size * 1.35f, opacity);
+                                      wall.SurfaceNormal, size, size * 1.35f, opacity, Blood);
 
                     if (_cfg.SprayMist && _random.NextDouble() < 0.35)
                     {
                         _decals.OnSurface(Decals.Lane.Splatter, DecalType.SplattersBloodMist,
                                           wall.HitPosition, wall.SurfaceNormal,
-                                          size * 2.2f, size * 2.2f, opacity * 0.45f);
+                                          size * 2.2f, size * 2.2f, opacity * 0.45f, Blood);
                     }
 
                     // Blood that hit a wall runs down it and ends up on the floor. Only the
@@ -132,7 +143,7 @@ namespace BloodyMess.Gore
 
             _decals.OnGround(Decals.Lane.Splatter, type, ground.Position,
                              (float)(_random.NextDouble() * Math.PI * 2.0),
-                             size * 1.2f, size * 1.2f, opacity);
+                             size * 1.2f, size * 1.2f, opacity, Blood);
 
             Register(ground.Position, size);
         }

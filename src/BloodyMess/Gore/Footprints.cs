@@ -171,7 +171,8 @@ namespace BloodyMess.Gore
 
             var handle = _decals.OnGround(
                 Decals.Lane.Splatter, DecalType.SplattersBlood, ground.Position, heading,
-                _cfg.FootprintWidth, _cfg.FootprintLength, opacity);
+                _cfg.FootprintWidth, _cfg.FootprintLength, opacity,
+                new Tint(_cfg.BloodRed, _cfg.BloodGreen, _cfg.BloodBlue));
 
             if (handle == 0) return;
 

@@ -86,12 +86,12 @@ namespace BloodyMess.Gore
             var ground = Ground.Probe(position, 2f, ped);
             if (!ground.Found) return;
 
-            var size = _cfg.DripSize * (0.7f + (float)_random.NextDouble() * 0.6f) *
-                       (0.7f + _cfg.Scale * 0.3f);
+            var size = _cfg.DripSize * (0.7f + (float)_random.NextDouble() * 0.6f);
 
             _decals.OnGround(Decals.Lane.Splatter, DecalType.SplattersBlood, ground.Position,
                              (float)(_random.NextDouble() * Math.PI * 2.0),
-                             size, size, _cfg.DripOpacity);
+                             size, size, _cfg.DripOpacity,
+                             new Tint(_cfg.BloodRed, _cfg.BloodGreen, _cfg.BloodBlue));
 
             // Drops are registered as wet, but at their own small size -- so a blood trail can
             // be walked in and carried on, which is right, without a single drop behaving like

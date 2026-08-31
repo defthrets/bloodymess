@@ -117,8 +117,11 @@ namespace BloodyMess.Core
         /// <summary>How wide the cone is. 0 is a line, 1 is a wide fan.</summary>
         public float SpraySpread = 0.45f;
 
-        public float SprayMinSize = 0.12f;
-        public float SprayMaxSize = 0.55f;
+        // MUCH SMALLER THAN 0.1.0, which shipped 0.12-0.55 and then multiplied that by a
+        // damage factor capped at 2.5 and again by the gore level -- a kill produced splatters
+        // nearly two metres across. See Spray for the damage curve that went with it.
+        public float SprayMinSize = 0.06f;
+        public float SprayMaxSize = 0.20f;
         public float SprayOpacity = 0.85f;
 
         /// <summary>Whether spray is allowed to land on walls, not just the ground.</summary>
@@ -287,6 +290,23 @@ namespace BloodyMess.Core
         /// <summary>Novelty. Green.</summary>
         public bool AlienBlood = false;
 
+        // ---- Appearance ------------------------------------------------------
+
+        /// <summary>
+        /// The colour blood is tinted, as ADD_DECAL's red, green and blue coefficients.
+        ///
+        /// THIS IS WHAT MAKES BLOOD RED RATHER THAN WHITE. The game's splatter textures --
+        /// the fxdecal_splatter_mist family -- are greyscale masks, so the colour has to come
+        /// from here. 0.1.0 passed 1,1,1 through them and the blood came out looking like
+        /// milk. Pools are not tinted: their textures are properly coloured already.
+        ///
+        /// Defaults are a dark arterial red. Raise BloodRed towards 1 for brighter, more
+        /// cartoonish blood; raise green and blue together to make it browner and older.
+        /// </summary>
+        public float BloodRed = 0.42f;
+        public float BloodGreen = 0.02f;
+        public float BloodBlue = 0.02f;
+
         // ---- loading ---------------------------------------------------------
 
         public static Settings Load()
@@ -376,6 +396,10 @@ namespace BloodyMess.Core
                 cfg.ShotgunDecals = ini.GetBool("Game", "ShotgunDecals", cfg.ShotgunDecals);
                 cfg.ClownBlood = ini.GetBool("Game", "ClownBlood", cfg.ClownBlood);
                 cfg.AlienBlood = ini.GetBool("Game", "AlienBlood", cfg.AlienBlood);
+
+                cfg.BloodRed = ini.GetFloat("Appearance", "BloodRed", cfg.BloodRed, 0f, 1f);
+                cfg.BloodGreen = ini.GetFloat("Appearance", "BloodGreen", cfg.BloodGreen, 0f, 1f);
+                cfg.BloodBlue = ini.GetFloat("Appearance", "BloodBlue", cfg.BloodBlue, 0f, 1f);
 
                 Log.Level = cfg.LogLevel;
                 cfg.Validate();

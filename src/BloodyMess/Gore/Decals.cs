@@ -38,6 +38,29 @@ namespace BloodyMess.Gore
     }
 
     /// <summary>
+    /// The colour a decal texture is multiplied by.
+    ///
+    /// THIS IS NOT DECORATION, IT IS WHAT MAKES BLOOD RED. Most of the game's blood splatter
+    /// textures -- fxdecal_splatter_mist and the rest of that family -- are GREYSCALE MASKS.
+    /// The colour comes from the coefficients handed to ADD_DECAL, and passing white through
+    /// one produces a white splatter. This was shipped wrong in 0.1.0, with a comment
+    /// confidently explaining that the textures were "already the right colour", and the
+    /// result was blood that came out like milk.
+    ///
+    /// The pool textures are the exception: fxdecal_blood_pool is properly coloured art, so
+    /// pools pass None and keep their own look.
+    /// </summary>
+    internal struct Tint
+    {
+        public float R, G, B;
+
+        public Tint(float r, float g, float b) { R = r; G = g; B = b; }
+
+        /// <summary>Leaves the texture exactly as the artist drew it.</summary>
+        public static Tint None => new Tint(1f, 1f, 1f);
+    }
+
+    /// <summary>
     /// Every decal this mod puts in the world, and the only thing allowed to put one there.
     ///
     /// THIS CLASS IS THE REASON THE MOD IS SAFE TO RUN. The game has a fixed decal pool, and
@@ -136,11 +159,12 @@ namespace BloodyMess.Gore
         /// fixed angle like a sticker.
         /// </summary>
         public int OnGround(Lane lane, int type, Vector3 position, float heading,
-                            float width, float length, float opacity, float timeout = -1f)
+                            float width, float length, float opacity, Tint tint,
+                            float timeout = -1f)
         {
             var side = new Vector3((float)Math.Cos(heading), (float)Math.Sin(heading), 0f);
             return Add(lane, type, position, new Vector3(0f, 0f, -1f), side,
-                       width, length, opacity, timeout);
+                       width, length, opacity, tint, timeout);
         }
 
         /// <summary>
@@ -151,7 +175,8 @@ namespace BloodyMess.Gore
         /// still costs a slot.
         /// </summary>
         public int OnSurface(Lane lane, int type, Vector3 position, Vector3 normal,
-                             float width, float height, float opacity, float timeout = -1f)
+                             float width, float height, float opacity, Tint tint,
+                             float timeout = -1f)
         {
             if (normal.LengthSquared() < 0.0001f) normal = new Vector3(0f, 0f, 1f);
             normal.Normalize();
@@ -164,18 +189,17 @@ namespace BloodyMess.Gore
             if (side.LengthSquared() < 0.0001f) side = Vector3.WorldEast;
             side.Normalize();
 
-            return Add(lane, type, position, -normal, side, width, height, opacity, timeout);
+            return Add(lane, type, position, -normal, side, width, height, opacity, tint, timeout);
         }
 
         /// <summary>
         /// The one call to ADD_DECAL in the mod.
         ///
-        /// The colour coefficients are left at 1,1,1: the blood textures are already the right
-        /// colour, and tinting them is how blood ends up looking like paint. Opacity is the
-        /// only channel used to make a decal look old or thin.
+        /// The colour comes from the caller -- see Tint, and note that most of the splatter
+        /// textures are greyscale masks that are WHITE unless something tints them.
         /// </summary>
         private int Add(Lane lane, int type, Vector3 position, Vector3 direction, Vector3 side,
-                        float width, float height, float opacity, float timeout)
+                        float width, float height, float opacity, Tint tint, float timeout)
         {
             if (!CanAfford(position)) { Refused++; return 0; }
 
@@ -196,7 +220,7 @@ namespace BloodyMess.Gore
                     direction.X, direction.Y, direction.Z,
                     side.X, side.Y, side.Z,
                     width, height,
-                    1f, 1f, 1f,
+                    tint.R, tint.G, tint.B,
                     Clamp01(opacity),
                     // See Settings.DecalTimeout for why this is an enormous number and not
                     // zero: the unit this parameter is in is not reliably documented, and the

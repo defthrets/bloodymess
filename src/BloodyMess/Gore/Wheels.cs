@@ -166,7 +166,8 @@ namespace BloodyMess.Gore
                 // looks like a stain somebody parked on, not like a track.
                 var handle = _decals.OnGround(
                     Decals.Lane.Splatter, DecalType.SplattersBlood, ground.Position, heading,
-                    _cfg.WheelTrackSize * 0.5f, _cfg.WheelTrackSize * 2f, opacity);
+                    _cfg.WheelTrackSize * 0.5f, _cfg.WheelTrackSize * 2f, opacity,
+                    new Tint(_cfg.BloodRed, _cfg.BloodGreen, _cfg.BloodBlue));
 
                 if (handle != 0) laid = true;
             }

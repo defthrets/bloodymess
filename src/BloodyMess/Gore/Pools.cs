@@ -75,8 +75,13 @@ namespace BloodyMess.Gore
             victim.PoolStep = victim.PoolStep + 1;
 
             var fraction = (float)victim.PoolStep / _cfg.PoolSteps;
+
+            // NOT MULTIPLIED BY THE GORE LEVEL. MaxSize is a measurement in metres and it is
+            // meant to be believable; scaling it by the level as well took a 1.7m pool to over
+            // three metres at Mess, which is wider than the road. The level drives how much
+            // blood there is elsewhere -- it has no business resizing a body's own pool.
             var size = _cfg.PoolStartSize +
-                       (_cfg.PoolMaxSize * _cfg.Scale - _cfg.PoolStartSize) * fraction;
+                       (_cfg.PoolMaxSize - _cfg.PoolStartSize) * fraction;
 
             Place(victim, ped, size);
 
@@ -119,7 +124,11 @@ namespace BloodyMess.Gore
                 ped.Heading * (float)(Math.PI / 180.0),
                 size, size * 0.85f,
                 // A porous surface soaks it up, so it never looks as wet as tarmac does.
-                ground.Porous ? 0.75f : 0.95f);
+                ground.Porous ? 0.75f : 0.95f,
+                // NOT TINTED. The pool textures -- fxdecal_blood_pool and friends -- are
+                // properly coloured art, unlike the greyscale splatter masks, so tinting them
+                // would only darken art that is already right.
+                Tint.None);
 
             if (handle == 0)
             {
