@@ -1,0 +1,127 @@
+{
+  "_readme": [
+    "What each kind of weapon does to a body. Edit freely - a bad value costs an effect, never a crash.",
+    "",
+    "entryFx / exitFx / headFx are PARTICLE EFFECT names from the game's own 'core' asset.",
+    "  Ones that exist and are worth trying: blood_entry, blood_exit, blood_headshot,",
+    "  blood_entry_shotgun, blood_entry_sniper, blood_entry_head_sniper, blood_mist,",
+    "  blood_stab, blood_melee_punch, blood_melee_blunt, blood_throat, blood_nose,",
+    "  blood_mouth, blood_fall, blood_armour, blood_armour_heavy, blood_stungun, bang_blood.",
+    "  A name the game does not know draws nothing at all - no error, no log line.",
+    "  An empty string means 'no effect here', which is a real choice, not a missing value.",
+    "",
+    "wound / bigWound are the game's ped blood decals. bigWound is used on a kill or a heavy hit.",
+    "  Valid: BulletSmall, BulletLarge, ShotgunSmall, ShotgunSmallMonolithic, ShotgunLarge,",
+    "  NonFatalHeadshot, Stab, BasicSlash, BackSplash, ScriptedBackSplash.",
+    "",
+    "damagePack is one of the game's pre-authored wound-and-torn-clothing sets, applied on a",
+    "  kill only. Empty for none. Known-good names: SCR_Dumpster, Explosion_Med,",
+    "  BigHitByVehicle, SCR_Torture, HOSPITAL_0 through HOSPITAL_9.",
+    "",
+    "spray multiplies how many splatter decals a hit throws. 0 means this weapon draws no blood.",
+    "fxScale multiplies the size of the particle burst.",
+    "",
+    "Group names are the game's own: Pistol, SMG, AssaultRifle, MG, Shotgun, Sniper, Heavy,",
+    "Thrown, Melee, Unarmed, Stungun. Anything not listed falls back to 'default' below.",
+    "Any field you leave out keeps the built-in value, so an entry can change one thing only."
+  ],
+
+  "default": {
+    "entryFx": "blood_entry",
+    "exitFx": "blood_exit",
+    "headFx": "blood_headshot",
+    "wound": "BulletSmall",
+    "bigWound": "BulletLarge",
+    "damagePack": "",
+    "spray": 1.0,
+    "fxScale": 1.0
+  },
+
+  "groups": {
+    "Pistol": {
+      "spray": 1.0,
+      "fxScale": 1.0
+    },
+
+    "SMG": {
+      "spray": 1.1,
+      "fxScale": 1.05
+    },
+
+    "AssaultRifle": {
+      "wound": "BulletLarge",
+      "spray": 1.4,
+      "fxScale": 1.2
+    },
+
+    "MG": {
+      "wound": "BulletLarge",
+      "spray": 1.6,
+      "fxScale": 1.3
+    },
+
+    "Shotgun": {
+      "entryFx": "blood_entry_shotgun",
+      "wound": "ShotgunSmall",
+      "bigWound": "ShotgunLarge",
+      "damagePack": "SCR_Dumpster",
+      "spray": 2.4,
+      "fxScale": 1.6
+    },
+
+    "Sniper": {
+      "entryFx": "blood_entry_sniper",
+      "headFx": "blood_entry_head_sniper",
+      "wound": "BulletLarge",
+      "bigWound": "ShotgunLarge",
+      "spray": 2.6,
+      "fxScale": 1.8
+    },
+
+    "Heavy": {
+      "wound": "ShotgunLarge",
+      "bigWound": "ShotgunLarge",
+      "damagePack": "Explosion_Med",
+      "spray": 3.0,
+      "fxScale": 2.0
+    },
+
+    "Thrown": {
+      "wound": "ShotgunLarge",
+      "bigWound": "ShotgunLarge",
+      "damagePack": "Explosion_Med",
+      "spray": 2.6,
+      "fxScale": 1.8
+    },
+
+    "Melee": {
+      "entryFx": "blood_stab",
+      "exitFx": "blood_melee_blunt",
+      "headFx": "blood_melee_punch",
+      "wound": "BasicSlash",
+      "bigWound": "Stab",
+      "spray": 1.2,
+      "fxScale": 1.1
+    },
+
+    "Unarmed": {
+      "entryFx": "blood_melee_punch",
+      "exitFx": "blood_melee_punch",
+      "headFx": "blood_nose",
+      "wound": "BasicSlash",
+      "bigWound": "BasicSlash",
+      "spray": 0.4,
+      "fxScale": 0.8
+    },
+
+    "Stungun": {
+      "entryFx": "blood_stungun",
+      "exitFx": "",
+      "headFx": "blood_stungun",
+      "wound": "BulletSmall",
+      "bigWound": "BulletSmall",
+      "spray": 0.0,
+      "fxScale": 0.6
+    }
+  }
+}
