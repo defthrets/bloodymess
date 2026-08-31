@@ -103,7 +103,7 @@ namespace BloodyMess.Gore
                 Splash(next.At, next.Size, next.Opacity);
             }
 
-            while (_pending.Count > 300) _pending.Dequeue();
+            while (_pending.Count > 500) _pending.Dequeue();
         }
 
         public void Throw(Hit hit)
@@ -152,7 +152,7 @@ namespace BloodyMess.Gore
             var drops = (int)Math.Round(_cfg.SprayGroundDrops * _cfg.Scale);
             if (drops <= 0) return;
 
-            drops = Math.Min(drops, 26);
+            drops = Math.Min(drops, 48);
 
             var feet = hit.Ped.Position;
 

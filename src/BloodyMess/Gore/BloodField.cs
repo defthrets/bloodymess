@@ -39,7 +39,7 @@ namespace BloodyMess.Gore
         /// still on the ground, so you can walk through a visible pool and pick nothing up --
         /// the footprints just stop working, with no clue as to why.
         /// </summary>
-        private const int MaxSpots = 420;
+        private const int MaxSpots = 640;
 
         private readonly List<Spot> _spots = new List<Spot>();
         private int _lastSweep;

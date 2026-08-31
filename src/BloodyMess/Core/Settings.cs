@@ -140,7 +140,7 @@ namespace BloodyMess.Core
         /// standing. It is what makes the ground under somebody you have just shot actually
         /// look like it, rather than being clean while a fan of drops sits behind them.
         /// </summary>
-        public int SprayGroundDrops = 10;
+        public int SprayGroundDrops = 20;
 
         /// <summary>How far behind the ped the spray is allowed to reach, in metres.</summary>
         public float SprayRange = 4.5f;
@@ -312,7 +312,7 @@ namespace BloodyMess.Core
         /// problem. Six per frame drains a whole kill's worth over about a quarter of a
         /// second and is invisible to look at.
         /// </summary>
-        public int ProbesPerFrame = 6;
+        public int ProbesPerFrame = 10;
 
         /// <summary>
         /// The lifetime passed straight to ADD_DECAL.
@@ -432,7 +432,7 @@ namespace BloodyMess.Core
                 cfg.SprayEnabled = ini.GetBool("Spray", "Enabled", cfg.SprayEnabled);
                 cfg.SprayPerHit = ini.GetInt("Spray", "PerHit", cfg.SprayPerHit, 0, 40);
                 cfg.SprayGroundDrops = ini.GetInt("Spray", "GroundDrops",
-                                                  cfg.SprayGroundDrops, 0, 32);
+                                                  cfg.SprayGroundDrops, 0, 64);
                 cfg.SprayRange = ini.GetFloat("Spray", "Range", cfg.SprayRange, 0.5f, 15f);
                 cfg.SpraySpread = ini.GetFloat("Spray", "Spread", cfg.SpraySpread, 0f, 1.5f);
                 cfg.SprayMinSize = ini.GetFloat("Spray", "MinSize", cfg.SprayMinSize, 0.02f, 2f);
@@ -477,9 +477,13 @@ namespace BloodyMess.Core
                 cfg.WheelTrackSize = ini.GetFloat("Wheels", "Size", cfg.WheelTrackSize, 0.05f, 2f);
                 cfg.WheelTrackOpacity = ini.GetFloat("Wheels", "Opacity", cfg.WheelTrackOpacity, 0.05f, 1f);
 
-                cfg.MaxSplatters = ini.GetInt("Budget", "MaxSplatters", cfg.MaxSplatters, 8, 900);
+                // CEILING RAISED FROM 900. The ini asks for more than that now, and GetInt
+                // CLAMPS rather than failing -- so the old ceiling would have quietly capped
+                // the budget and made "double the blood" not actually double it, with only a
+                // line in the log to say so.
+                cfg.MaxSplatters = ini.GetInt("Budget", "MaxSplatters", cfg.MaxSplatters, 8, 2000);
                 cfg.MaxPools = ini.GetInt("Budget", "MaxPools", cfg.MaxPools, 0, 300);
-                cfg.DecalsPerSecond = ini.GetInt("Budget", "PerSecond", cfg.DecalsPerSecond, 1, 200);
+                cfg.DecalsPerSecond = ini.GetInt("Budget", "PerSecond", cfg.DecalsPerSecond, 1, 400);
                 cfg.DecalRange = ini.GetFloat("Budget", "Range", cfg.DecalRange, 5f, 300f);
                 cfg.ProbesPerFrame = ini.GetInt("Budget", "ProbesPerFrame",
                                                 cfg.ProbesPerFrame, 1, 64);
