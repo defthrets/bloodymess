@@ -366,11 +366,15 @@ namespace BloodyMess.Core
         /// <summary>
         /// Whether a headshot can take the head clean off.
         ///
-        /// This is the ONE piece of dismemberment GTA V supports. There are no natives for
-        /// severing anything else, and no severed-head prop in the game files, so the head is
-        /// removed and gore replaces it rather than a head falling and rolling away.
+        /// OFF BY DEFAULT, and that is a deliberate reversal. It is the one piece of
+        /// dismemberment GTA V supports, but a head popping is a NON-VANILLA EVENT -- it
+        /// changes what a headshot is rather than making the existing one bloodier, and it
+        /// drags a neck spurt along with it that the stock game never shows. The point of
+        /// this mod is more of what the game already does, not new things it does not.
+        ///
+        /// The whole feature is still here and still works; turn it on if you want it.
         /// </summary>
-        public bool HeadsEnabled = true;
+        public bool HeadsEnabled = false;
 
         /// <summary>
         /// A global multiplier on the per-weapon chance in gore.json.
