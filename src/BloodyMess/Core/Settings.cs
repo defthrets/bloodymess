@@ -337,6 +337,21 @@ namespace BloodyMess.Core
         public float DecalRange = 65f;
 
         /// <summary>
+        /// Seconds a splatter stays in the world before the mod takes it back.
+        ///
+        /// WITHOUT THIS, BLOOD ONLY EVER LEFT WHEN THE CAP EVICTED IT -- so a session climbed
+        /// to MaxSplatters and sat there, holding a thousand decals of the game's fixed pool
+        /// for a firefight that finished twenty minutes ago.
+        ///
+        /// Three minutes keeps a scene intact for as long as anyone is realistically standing
+        /// in it, and has the street clean by the time they come back. Pools get twice this,
+        /// because there are far fewer of them and a body should not go clean while the
+        /// spatter around it is still there. Set to 0 for the old behaviour, where blood stays
+        /// until something newer pushes it out.
+        /// </summary>
+        public float FadeSeconds = 180f;
+
+        /// <summary>
         /// Ground probes allowed per frame.
         ///
         /// THE FRAME-TIME SAFETY, and the counterpart to the decal budget. Every ground
@@ -562,6 +577,7 @@ namespace BloodyMess.Core
                 cfg.DecalRange = ini.GetFloat("Budget", "Range", cfg.DecalRange, 5f, 300f);
                 cfg.ProbesPerFrame = ini.GetInt("Budget", "ProbesPerFrame",
                                                 cfg.ProbesPerFrame, 1, 64);
+                cfg.FadeSeconds = ini.GetFloat("Budget", "FadeSeconds", cfg.FadeSeconds, 0f, 7200f);
                 cfg.DecalTimeout = ini.GetFloat("Budget", "Timeout", cfg.DecalTimeout, 0f, 1000000f);
 
                 cfg.BiggerBloodParticles = ini.GetBool("Game", "BiggerBloodParticles",

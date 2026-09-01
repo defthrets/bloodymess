@@ -855,11 +855,19 @@ namespace BloodyMess.UI
                    () => _cfg.MaxPools, v => _cfg.MaxPools = (int)v, 0f, 300f, 5f);
             Number("Probes per frame", "Budget", "ProbesPerFrame",
                    () => _cfg.ProbesPerFrame, v => _cfg.ProbesPerFrame = (int)v, 1f, 64f, 1f);
+            Number("Blood fades after", "Budget", "FadeSeconds",
+                   () => _cfg.FadeSeconds, v => _cfg.FadeSeconds = v, 0f, 1200f, 15f);
 
             _building.Options.Add(new Option
             {
                 Name = "Blood laid",
                 Show = () => _spray.Placed + "   (" + _spray.Queued + " queued)"
+            });
+
+            _building.Options.Add(new Option
+            {
+                Name = "Faded away",
+                Show = () => _decals.Expired.ToString(CultureInfo.InvariantCulture)
             });
 
             _building.Options.Add(new Option

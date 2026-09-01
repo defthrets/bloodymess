@@ -116,6 +116,9 @@ namespace BloodyMess.Gore
         {
             public int Handle;
             public int Frame;
+
+            /// <summary>Game time in milliseconds when this decal was laid.</summary>
+            public int BornAt;
         }
 
         private readonly Settings _cfg;
@@ -140,7 +143,10 @@ namespace BloodyMess.Gore
         /// <summary>Decals refused this session because the budget was already spent.</summary>
         public int Refused { get; private set; }
 
-        /// <summary>Advances the frame counter and reopens the rate window. Called once per tick.</summary>
+        /// <summary>Blood removed by age this session, rather than by eviction.</summary>
+        public int Expired { get; private set; }
+
+        /// <summary>Advances the frame counter, reopens the rate window, and ages blood out.</summary>
         public void Tick()
         {
             _frame++;
@@ -151,6 +157,67 @@ namespace BloodyMess.Gore
                 _windowOpenedAt = now;
                 _thisSecond = 0;
             }
+
+            Expire(now);
+        }
+
+        /// <summary>
+        /// Takes blood back out of the world once it is old enough.
+        ///
+        /// WHY THIS IS DONE HERE RATHER THAN WITH ADD_DECAL'S OWN TIMEOUT: that parameter's
+        /// unit is not reliably documented -- the native reference disagrees with itself about
+        /// seconds versus milliseconds -- which is exactly why this mod passes a deliberately
+        /// enormous value for it and does not rely on it. Every decal we lay is already
+        /// stamped with the time it was laid, so ageing them out here is exact, in units we
+        /// chose, and cannot be wrong by a factor of a thousand.
+        ///
+        /// The lists are APPENDED IN ORDER, so the oldest entry is always at the front. That
+        /// makes this a walk off the head until something is young enough rather than a scan
+        /// of the whole ledger, so the cost is proportional to what actually expired -- which
+        /// is usually nothing.
+        ///
+        /// Without this, blood only ever left when the cap evicted it, so a session would
+        /// climb to the ceiling and simply stay there.
+        /// </summary>
+        private void Expire(int now)
+        {
+            if (_cfg.FadeSeconds <= 0f) return;
+
+            var life = (int)(_cfg.FadeSeconds * 1000f);
+
+            Expire(_splatters, now - life, ref _splatterCursor);
+
+            // Pools last longer, because there are far fewer of them and a body somebody is
+            // still standing over should not go clean while the spatter around it remains.
+            Expire(_pools, now - life * 2, ref _poolCursor);
+        }
+
+        private void Expire(List<Entry> list, int cutoff, ref int cursor)
+        {
+            var removed = 0;
+
+            while (list.Count > 0 && list[0].BornAt <= cutoff)
+            {
+                var oldest = list[0];
+                list.RemoveAt(0);
+
+                try { Function.Call(Hash.REMOVE_DECAL, oldest.Handle); }
+                catch { /* already gone */ }
+
+                Expired++;
+                removed++;
+            }
+
+            if (removed == 0) return;
+
+            // ENTRIES CAME OFF THE FRONT, so everything behind them shuffled down and the
+            // prune cursor now points further along the list than it did. It is pulled back by
+            // exactly what was removed, which leaves it on the same entry it was on.
+            //
+            // Resetting it to zero instead -- and doing so every tick, removal or not -- would
+            // quietly undo the round-robin pruning: the sweep would restart at the head every
+            // frame and never reach the far end of the list.
+            cursor = Math.Max(0, cursor - removed);
         }
 
         /// <summary>True when another decal would be within both the rate and the range limits.</summary>
@@ -250,7 +317,7 @@ namespace BloodyMess.Gore
 
                 if (handle == 0) { Refused++; return 0; }
 
-                list.Add(new Entry { Handle = handle, Frame = _frame });
+                list.Add(new Entry { Handle = handle, Frame = _frame, BornAt = Game.GameTime });
                 _thisSecond++;
                 return handle;
             }
