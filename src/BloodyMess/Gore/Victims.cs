@@ -223,7 +223,7 @@ namespace BloodyMess.Gore
                 return;
             }
 
-            _victims[handle] = new Victim
+            var victim = new Victim
             {
                 Ped = ped,
                 Handle = handle,
@@ -233,6 +233,25 @@ namespace BloodyMess.Gore
                 LastDripAt = ped.Position,
                 LastPrintAt = ped.Position
             };
+
+            // A PED THAT IS ALREADY DEAD THE FIRST TIME WE SEE IT GETS NO POOL, and this is
+            // not an optimisation -- it is a fix for two pools appearing under one body.
+            //
+            // Tracking is dropped for anybody unseen for a while, so walking out of range of a
+            // corpse and coming back re-adopts it as a brand new victim with a fresh, empty
+            // pool state. It would then grow a SECOND pool from scratch, on top of the first,
+            // whose decal handle the old record took with it and can no longer remove. The
+            // result is exactly what it looks like: one pool overlapping another, at different
+            // sizes because they started at different times.
+            //
+            // We only pool the deaths we actually witness.
+            if (!isPlayer && SafeIsDead(ped))
+            {
+                victim.PoolFinished = true;
+                victim.HeadGone = true;
+            }
+
+            _victims[handle] = victim;
         }
 
         /// <summary>Looks one tracked ped over and records anything that happened to them.</summary>
@@ -460,6 +479,12 @@ namespace BloodyMess.Gore
             }
 
             return WeaponGroup.Unarmed;
+        }
+
+        private static bool SafeIsDead(Ped ped)
+        {
+            try { return ped.IsDead; }
+            catch { return false; }
         }
 
         private static float SafeHealth(Ped ped)

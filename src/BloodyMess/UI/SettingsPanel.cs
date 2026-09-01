@@ -812,6 +812,8 @@ namespace BloodyMess.UI
                    () => _cfg.BloodRed, v => _cfg.BloodRed = v, 0.05f, 1f, 0.02f);
             Number("Pool colour", "Appearance", "PoolRed",
                    () => _cfg.PoolRed, v => _cfg.PoolRed = v, 0.05f, 1f, 0.02f);
+            Switch("Varied pool textures", "Pools", "VariedTextures",
+                   () => _cfg.PoolVariedTextures, v => _cfg.PoolVariedTextures = v);
 
             NewTab("Prints", IconPrints);
 

@@ -203,6 +203,20 @@ namespace BloodyMess.Core
         /// <summary>Whether badly wounded peds who are still alive pool as well as the dead.</summary>
         public bool PoolsFromWounded = true;
 
+        /// <summary>
+        /// Use the game's varied blood-pool textures instead of the single plain one.
+        ///
+        /// OFF, because "varied" here means UNCONTROLLED. The blood pool id has four texture
+        /// variants and the engine picks one at random -- one colourless, three already dark
+        /// red -- so with a tint applied you get bright red pools sitting next to dark maroon
+        /// ones with no setting able to bring them together. Off, every pool uses one
+        /// colourless texture and the tint alone decides the colour, so they all match.
+        ///
+        /// Turn it on if you would rather have the extra texture detail and can live with
+        /// pools not matching each other.
+        /// </summary>
+        public bool PoolVariedTextures = false;
+
         // ---- Drips (a wounded ped still walking) ------------------------------
 
         public bool DripsEnabled = true;
@@ -424,9 +438,12 @@ namespace BloodyMess.Core
         /// enough to leave those alone renders the colourless one as a bright scarlet oval
         /// that looks like a rug. There is no single value that serves both, so there are two.
         /// </summary>
-        public float PoolRed = 0.38f;
-        public float PoolGreen = 0.03f;
-        public float PoolBlue = 0.028f;
+        // DARKER AGAIN. With every pool now coming through one colourless texture, the tint
+        // is the whole colour -- and 0.38 through a plain white pool is a bright pillar-box
+        // red. This sits where the game's own blood pools sit.
+        public float PoolRed = 0.24f;
+        public float PoolGreen = 0.022f;
+        public float PoolBlue = 0.02f;
 
         // ---- loading ---------------------------------------------------------
 
@@ -483,6 +500,8 @@ namespace BloodyMess.Core
                 cfg.PoolMaxSize = ini.GetFloat("Pools", "MaxSize", cfg.PoolMaxSize, 0.1f, 6f);
                 cfg.PoolSteps = ini.GetInt("Pools", "Steps", cfg.PoolSteps, 1, 20);
                 cfg.PoolsFromWounded = ini.GetBool("Pools", "FromWounded", cfg.PoolsFromWounded);
+                cfg.PoolVariedTextures = ini.GetBool("Pools", "VariedTextures",
+                                                     cfg.PoolVariedTextures);
 
                 cfg.DripsEnabled = ini.GetBool("Drips", "Enabled", cfg.DripsEnabled);
                 cfg.DripDistance = ini.GetFloat("Drips", "Distance", cfg.DripDistance, 0.2f, 10f);

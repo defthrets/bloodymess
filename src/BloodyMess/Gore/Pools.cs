@@ -119,8 +119,15 @@ namespace BloodyMess.Gore
                 return;
             }
 
+            // Porous ground has one variant anyway; hard ground gets the single-variant id
+            // unless the player has asked for the varied blood textures and accepted that
+            // pools will not match each other.
+            var type = ground.Porous
+                ? DecalType.PorousPoolBlood
+                : _cfg.PoolVariedTextures ? DecalType.SolidPoolBlood : DecalType.SolidPoolPlain;
+
             var handle = _decals.OnGround(
-                Decals.Lane.Pool, ground.PoolType, ground.Position,
+                Decals.Lane.Pool, type, ground.Position,
                 ped.Heading * (float)(Math.PI / 180.0),
                 size, size * 0.85f,
                 // A porous surface soaks it up, so it never looks as wet as tarmac does.

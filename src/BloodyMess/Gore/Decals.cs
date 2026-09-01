@@ -30,8 +30,26 @@ namespace BloodyMess.Gore
         /// <summary>A second splatter set. Mixed in so a wall is not eight copies of one texture.</summary>
         public const int SplattersBlood2 = 1110;
 
-        /// <summary>A pool on a hard surface -- road, tile, concrete. Wet-looking.</summary>
+        /// <summary>
+        /// A pool on a hard surface, using the game's BLOOD pool id.
+        ///
+        /// FOUR TEXTURE VARIANTS and the engine picks one at random: `pool_solid`, which is
+        /// colourless, and three `fxdecal_blood_pool` textures which are already dark red.
+        /// Tinted, those come out as two visibly different shades -- a bright red pool beside
+        /// a dark maroon one, from the same setting. Good textures, inconsistent colour.
+        /// </summary>
         public const int SolidPoolBlood = 9001;
+
+        /// <summary>
+        /// A pool on a hard surface with exactly ONE texture variant.
+        ///
+        /// This is the game's oil-pool id, and the id is only a row in decals.dat selecting a
+        /// texture -- nothing about it is oil-specific once we supply the colour. It resolves
+        /// to `pool_solid` every single time, so the tint is the ONLY thing deciding what a
+        /// pool looks like and every pool matches every other pool. That consistency is worth
+        /// more than the extra texture detail in the 9001 set, which cannot be selected for.
+        /// </summary>
+        public const int SolidPoolPlain = 9002;
 
         /// <summary>A pool on something that soaks -- grass, dirt, carpet. Flat and matte.</summary>
         public const int PorousPoolBlood = 9006;
@@ -47,8 +65,10 @@ namespace BloodyMess.Gore
     /// confidently explaining that the textures were "already the right colour", and the
     /// result was blood that came out like milk.
     ///
-    /// The pool textures are the exception: fxdecal_blood_pool is properly coloured art, so
-    /// pools pass None and keep their own look.
+    /// Pools are tinted too, and by their OWN colour (see Settings.PoolRed). They used to
+    /// pass None on the grounds that fxdecal_blood_pool is properly coloured art -- which is
+    /// true of three of that decal's four texture variants and false of the fourth, so an
+    /// untinted pool came out white one time in four.
     /// </summary>
     internal struct Tint
     {
