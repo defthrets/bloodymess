@@ -62,10 +62,12 @@ namespace BloodyMess.Core
         /// <summary>
         /// Whether the menu can also be driven from a controller.
         ///
-        /// Opened by HOLDING the View/Back button (the one that shows the player list
-        /// online, and does nothing useful in single player). Held rather than tapped so it
-        /// cannot fire by accident, and it is the only face button on the pad that no
-        /// on-foot action is bound to.
+        /// Opened by HOLDING BOTH SHOULDER BUTTONS together.
+        ///
+        /// It used to be the View/Back button, which was wrong: that is Control.MultiplayerInfo
+        /// and the game maps it to D-PAD DOWN on a controller -- a gesture people hold in
+        /// normal play, so the menu kept opening by itself. Two shoulders held together is not
+        /// used by any on-foot or driving action.
         /// </summary>
         public bool ControllerMenu = true;
 

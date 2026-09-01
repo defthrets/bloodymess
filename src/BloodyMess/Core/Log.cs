@@ -141,7 +141,7 @@ namespace BloodyMess.Core
     /// </summary>
     internal static class Build
     {
-        public const string Version = "0.2.5";
+        public const string Version = "0.2.6";
         public const string Name = "Bloody Mess";
         public const string By = "spitmux";
     }

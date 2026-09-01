@@ -146,6 +146,8 @@ namespace BloodyMess.Gore
         /// <summary>Blood removed by age this session, rather than by eviction.</summary>
         public int Expired { get; private set; }
 
+        private bool _saidFading;
+
         /// <summary>Advances the frame counter, reopens the rate window, and ages blood out.</summary>
         public void Tick()
         {
@@ -209,6 +211,16 @@ namespace BloodyMess.Gore
             }
 
             if (removed == 0) return;
+
+            // Said ONCE, the first time blood ages out. It is the only evidence that the fade
+            // is running at all -- everything else about it is invisible until a decal simply
+            // is not there any more, which is indistinguishable from never having drawn it.
+            if (!_saidFading)
+            {
+                _saidFading = true;
+                Log.Info("Blood is fading: first " + removed + " decal(s) removed by age at " +
+                         _cfg.FadeSeconds.ToString("0") + "s. " + list.Count + " still live.");
+            }
 
             // ENTRIES CAME OFF THE FRONT, so everything behind them shuffled down and the
             // prune cursor now points further along the list than it did. It is pulled back by

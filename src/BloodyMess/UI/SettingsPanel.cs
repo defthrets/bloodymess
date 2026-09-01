@@ -338,17 +338,26 @@ namespace BloodyMess.UI
         }
 
         /// <summary>
-        /// Opens and closes the menu from a controller: HOLD the View/Back button.
+        /// Opens and closes the menu from a controller: HOLD BOTH SHOULDER BUTTONS.
         ///
-        /// Held rather than tapped so a stray press cannot open it mid-firefight, and fired
-        /// once per hold rather than repeatedly.
+        /// IT USED TO BE THE VIEW/BACK BUTTON, WHICH WAS A BAD CHOICE. That is
+        /// Control.MultiplayerInfo, and on a controller the game maps it to D-PAD DOWN -- the
+        /// player-list gesture, which people hold in normal play. The menu opened by itself.
+        ///
+        /// Two shoulder buttons held together is not a gesture any on-foot or driving action
+        /// uses, so it cannot fire by accident, and it is still one motion to reach.
         /// </summary>
         private bool PadToggled()
         {
             if (!_cfg.ControllerMenu) return false;
 
             bool down;
-            try { down = Game.IsControlPressed(GTA.Control.MultiplayerInfo); }
+
+            try
+            {
+                down = Game.IsControlPressed(GTA.Control.FrontendLb)
+                    && Game.IsControlPressed(GTA.Control.FrontendRb);
+            }
             catch { return false; }
 
             if (!down)
@@ -455,7 +464,6 @@ namespace BloodyMess.UI
                 GTA.Control.PhoneUp, GTA.Control.PhoneDown,
                 GTA.Control.PhoneLeft, GTA.Control.PhoneRight,
                 GTA.Control.PhoneSelect, GTA.Control.PhoneCancel,
-                GTA.Control.MultiplayerInfo,
 
                 // The shoulder buttons now change tab.
                 GTA.Control.FrontendLb, GTA.Control.FrontendRb
@@ -619,7 +627,7 @@ namespace BloodyMess.UI
             if (Game.GameTime < _flashUntil && !string.IsNullOrEmpty(_flash)) return _flash;
             if (_writeGaveUp) return "cannot write the ini - changes apply but will not stick";
 
-            return "Q/E or LB/RB tabs    arrows change    enter/A pick    back/B close";
+            return "Q/E or LB/RB tabs   arrows change   enter/A pick   back/B or LB+RB close";
         }
 
         private void Flash(string message)
