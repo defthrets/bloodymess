@@ -172,13 +172,25 @@ namespace BloodyMess.Core
         public float SprayMistChance = 0.85f;
 
         /// <summary>
-        /// Our OWN extra blood particle burst at the wound, on top of the game's.
+        /// The blood spray out of the wound itself.
         ///
-        /// OFF BY DEFAULT. The game already throws its own blood particles on a hit; adding a
-        /// second burst over the top is what made the spray read as far too much. The mist and
-        /// the blood on the ground carry the mod now, and the airborne part stays stock.
+        /// BACK ON. It went off in 0.1.5 when the spray was far too much, but that was the
+        /// gore level multiplying the burst by nearly three -- fixed separately in 0.1.4 by
+        /// taking the level out of it and making the exit burst fatal-only. With those in
+        /// place this is a wound-sized spurt at roughly the weapon's own scale, which is the
+        /// thing that makes a hit read as a hit rather than as a decal appearing.
+        ///
+        /// Tune it with ParticleScale below rather than by switching it off.
         /// </summary>
-        public bool SprayParticles = false;
+        public bool SprayParticles = true;
+
+        /// <summary>
+        /// Multiplier on the wound spray, over and above each weapon's own fxScale.
+        ///
+        /// One knob for "more" or "less" spray without editing eleven weapon entries in
+        /// gore.json. 1.0 is the tuned default.
+        /// </summary>
+        public float SprayParticleScale = 1f;
 
         // ---- Pools -----------------------------------------------------------
 
@@ -532,6 +544,8 @@ namespace BloodyMess.Core
                 cfg.SprayMistChance = ini.GetFloat("Spray", "MistChance",
                                                    cfg.SprayMistChance, 0f, 1f);
                 cfg.SprayParticles = ini.GetBool("Spray", "Particles", cfg.SprayParticles);
+                cfg.SprayParticleScale = ini.GetFloat("Spray", "ParticleScale",
+                                                      cfg.SprayParticleScale, 0.1f, 4f);
 
                 cfg.PoolsEnabled = ini.GetBool("Pools", "Enabled", cfg.PoolsEnabled);
                 cfg.PoolDelay = ini.GetFloat("Pools", "Delay", cfg.PoolDelay, 0f, 60f);

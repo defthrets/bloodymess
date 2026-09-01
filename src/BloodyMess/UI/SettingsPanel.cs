@@ -807,6 +807,10 @@ namespace BloodyMess.UI
                    () => _cfg.SprayGroundDrops, v => _cfg.SprayGroundDrops = (int)v, 0f, 64f, 2f);
             Number("Mist", "Spray", "MistChance",
                    () => _cfg.SprayMistChance, v => _cfg.SprayMistChance = v, 0f, 1f, 0.05f);
+            Switch("Spray from the wound", "Spray", "Particles",
+                   () => _cfg.SprayParticles, v => _cfg.SprayParticles = v);
+            Number("...how big", "Spray", "ParticleScale",
+                   () => _cfg.SprayParticleScale, v => _cfg.SprayParticleScale = v, 0.1f, 4f, 0.1f);
 
             NewTab("Pools", IconPool);
 

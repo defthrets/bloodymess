@@ -159,7 +159,7 @@ namespace BloodyMess.Gore
             // own effect -- which is what made a headshot look like a paint bomb rather than
             // a gunshot. The level belongs to how much blood ends up on the GROUND; the
             // burst in the air stays close to stock.
-            var scale = profile.FxScale;
+            var scale = profile.FxScale * _cfg.SprayParticleScale;
 
             var entry = hit.Headshot && !string.IsNullOrEmpty(profile.HeadFx)
                 ? profile.HeadFx

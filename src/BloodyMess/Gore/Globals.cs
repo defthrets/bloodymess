@@ -24,6 +24,9 @@ namespace BloodyMess.Gore
         private readonly Settings _cfg;
         private int _lastApplied;
 
+        /// <summary>True once we have switched the game's blood scale on ourselves.</summary>
+        private bool _pushedBloodScale;
+
         public Globals(Settings cfg)
         {
             _cfg = cfg;
@@ -45,7 +48,24 @@ namespace BloodyMess.Gore
             // SET_PARTICLE_FX_BLOOD_SCALE TAKES A BOOL, not a scale, despite its name -- checked
             // against the native list rather than assumed. Passing a float to a bool parameter
             // is the kind of thing that appears to work until a game update moves the stack.
-            Call(Hash.SET_PARTICLE_FX_BLOOD_SCALE, _cfg.BiggerBloodParticles);
+            //
+            // ONLY EVER SWITCHED ON, NEVER FORCED OFF, and that distinction matters. Nothing
+            // documents what the game's own default for this is. Pushing `false` into it every
+            // five seconds assumed the default was already false -- and if it is not, this mod
+            // was quietly SUPPRESSING the game's own blood particles the whole time, which
+            // would show up as wounds spraying less than they do in a clean install. Turning it
+            // on is a change we can justify; turning it off is a guess, so we do not make it.
+            if (_cfg.BiggerBloodParticles)
+            {
+                Call(Hash.SET_PARTICLE_FX_BLOOD_SCALE, true);
+                _pushedBloodScale = true;
+            }
+            else if (_pushedBloodScale)
+            {
+                // Only undo what we ourselves turned on.
+                Call(Hash.SET_PARTICLE_FX_BLOOD_SCALE, false);
+                _pushedBloodScale = false;
+            }
 
             Call(Hash.SET_PARTICLE_FX_BULLET_IMPACT_SCALE, _cfg.BulletImpactScale);
             Call(Hash.SET_DECAL_BULLET_IMPACT_RANGE_SCALE, _cfg.BulletImpactRange);
@@ -68,7 +88,14 @@ namespace BloodyMess.Gore
         /// </summary>
         public void Restore()
         {
-            Call(Hash.SET_PARTICLE_FX_BLOOD_SCALE, false);
+            // Again: only undo what we did. If we never switched it on, leaving it alone is
+            // what "restore" actually means.
+            if (_pushedBloodScale)
+            {
+                Call(Hash.SET_PARTICLE_FX_BLOOD_SCALE, false);
+                _pushedBloodScale = false;
+            }
+
             Call(Hash.SET_PARTICLE_FX_BULLET_IMPACT_SCALE, 1f);
             Call(Hash.SET_DECAL_BULLET_IMPACT_RANGE_SCALE, 1f);
             Call(Hash.DISABLE_COMPOSITE_SHOTGUN_DECALS, false);
