@@ -204,6 +204,27 @@ namespace BloodyMess.Core
         public bool PoolsFromWounded = true;
 
         /// <summary>
+        /// Draw our own pool under a body, instead of leaving it to the game.
+        ///
+        /// OFF, AND THE REASON IS THAT OURS CANNOT LOOK AS GOOD. GTA already grows a blood
+        /// pool under a corpse, and it uses the good `fxdecal_blood_pool` artwork -- textured,
+        /// glossy, the right colour without help. The decal ids a script can reach either mix
+        /// that artwork with a colourless `pool_solid` at random (id 9001, so pools come out in
+        /// two different shades) or are colourless every time (id 9002, so they come out as a
+        /// flat untextured blob whatever colour you tint them). Neither beats what the engine
+        /// does on its own.
+        ///
+        /// So by default this mod adds no pool of its own. What it still does is REGISTER the
+        /// ground under a body as wet, which is what the footprints are picked up from -- the
+        /// pool being the game's rather than ours makes no difference to that, and it costs no
+        /// decals at all.
+        ///
+        /// Turn it on if you want a bigger or differently coloured pool than the game's, and
+        /// tune it with MaxSize and the pool colour in [Appearance].
+        /// </summary>
+        public bool PoolsDrawOurOwn = false;
+
+        /// <summary>
         /// Use the game's varied blood-pool textures instead of the single plain one.
         ///
         /// OFF, because "varied" here means UNCONTROLLED. The blood pool id has four texture
@@ -441,9 +462,11 @@ namespace BloodyMess.Core
         // DARKER AGAIN. With every pool now coming through one colourless texture, the tint
         // is the whole colour -- and 0.38 through a plain white pool is a bright pillar-box
         // red. This sits where the game's own blood pools sit.
-        public float PoolRed = 0.24f;
-        public float PoolGreen = 0.022f;
-        public float PoolBlue = 0.02f;
+        // Only used when DrawOurOwn is on. Brighter than the 0.24 that made our pools read as
+        // near-black holes beside the game's own: this is roughly where GTA's own pools sit.
+        public float PoolRed = 0.5f;
+        public float PoolGreen = 0.07f;
+        public float PoolBlue = 0.06f;
 
         // ---- loading ---------------------------------------------------------
 
@@ -502,6 +525,7 @@ namespace BloodyMess.Core
                 cfg.PoolsFromWounded = ini.GetBool("Pools", "FromWounded", cfg.PoolsFromWounded);
                 cfg.PoolVariedTextures = ini.GetBool("Pools", "VariedTextures",
                                                      cfg.PoolVariedTextures);
+                cfg.PoolsDrawOurOwn = ini.GetBool("Pools", "DrawOurOwn", cfg.PoolsDrawOurOwn);
 
                 cfg.DripsEnabled = ini.GetBool("Drips", "Enabled", cfg.DripsEnabled);
                 cfg.DripDistance = ini.GetFloat("Drips", "Distance", cfg.DripDistance, 0.2f, 10f);

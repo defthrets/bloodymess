@@ -111,6 +111,16 @@ namespace BloodyMess.Gore
                 return;
             }
 
+            // THE POOL IS THE GAME'S UNLESS ASKED OTHERWISE. We still mark the ground wet, so
+            // the footprints have something to pick up -- that is the only thing this system
+            // owes the rest of the mod, and it costs no decals whatsoever. See
+            // Settings.PoolsDrawOurOwn for why ours is not drawn by default.
+            if (!_cfg.PoolsDrawOurOwn)
+            {
+                _field.Add(ground.Position, size * 0.5f, _cfg.FootprintWetSeconds);
+                return;
+            }
+
             if (!_decals.CanAfford(ground.Position))
             {
                 // Out of budget or out of range. Step back so the growth resumes rather than

@@ -804,6 +804,8 @@ namespace BloodyMess.UI
 
             Switch("Pools under bodies", "Pools", "Enabled",
                    () => _cfg.PoolsEnabled, v => _cfg.PoolsEnabled = v);
+            Switch("Draw our own pool", "Pools", "DrawOurOwn",
+                   () => _cfg.PoolsDrawOurOwn, v => _cfg.PoolsDrawOurOwn = v);
             Number("Pool size", "Pools", "MaxSize",
                    () => _cfg.PoolMaxSize, v => _cfg.PoolMaxSize = v, 0.2f, 4f, 0.1f);
             Switch("Trails from the wounded", "Drips", "Enabled",
