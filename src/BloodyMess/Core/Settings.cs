@@ -172,17 +172,17 @@ namespace BloodyMess.Core
         public float SprayMistChance = 0.85f;
 
         /// <summary>
-        /// The blood spray out of the wound itself.
+        /// Our OWN extra blood burst at the wound, ON TOP of the one the game already plays.
         ///
-        /// BACK ON. It went off in 0.1.5 when the spray was far too much, but that was the
-        /// gore level multiplying the burst by nearly three -- fixed separately in 0.1.4 by
-        /// taking the level out of it and making the exit burst fatal-only. With those in
-        /// place this is a wound-sized spurt at roughly the weapon's own scale, which is the
-        /// thing that makes a hit read as a hit rather than as a decal appearing.
+        /// OFF, AND THIS TIME FOR THE RIGHT REASON. It was switched on in 0.2.7 to answer
+        /// "wounds should spray like vanilla" -- but that release ALSO fixed the actual cause,
+        /// which was this mod pushing SET_PARTICLE_FX_BLOOD_SCALE(false) into the game every
+        /// five seconds and suppressing the game's own blood. With the suppression gone, GTA's
+        /// own spray is back at full strength, and ours on top of it is simply too much again.
         ///
-        /// Tune it with ParticleScale below rather than by switching it off.
+        /// Vanilla spray means the game's spray. This adds a second one, so it stays off.
         /// </summary>
-        public bool SprayParticles = true;
+        public bool SprayParticles = false;
 
         /// <summary>
         /// Multiplier on the wound spray, over and above each weapon's own fxScale.

@@ -459,8 +459,28 @@ namespace BloodyMess.Gore
                     if (cause != 0)
                     {
                         weaponHash = cause;
-                        var group = Function.Call<int>(Hash.GET_WEAPONTYPE_GROUP, cause);
-                        if (group != 0) return (WeaponGroup)group;
+
+                        // READ AS UINT AND VALIDATED, and both halves of that matter.
+                        //
+                        // GET_WEAPONTYPE_GROUP returns a joaat HASH, and SHVDN's WeaponGroup
+                        // enum is UInt32-backed with those same hashes -- several of which are
+                        // above int.MaxValue. Reading the native as `int` made those negative,
+                        // and casting a negative straight to the enum produced a value that is
+                        // not any real weapon group.
+                        //
+                        // Profiles.For then fell through to whatever that garbage matched or
+                        // to the default, so a rifle could be handed somebody else's gore
+                        // profile -- including the STUN GUN's, whose effect is blood_stungun:
+                        // electric arcs, out of the head, on an ordinary rifle hit.
+                        //
+                        // Enum.IsDefined is the guard: an unrecognised group is not used at
+                        // all, and we fall through to the player's actual weapon below.
+                        var group = Function.Call<uint>(Hash.GET_WEAPONTYPE_GROUP, cause);
+
+                        if (group != 0 && Enum.IsDefined(typeof(WeaponGroup), group))
+                        {
+                            return (WeaponGroup)group;
+                        }
                     }
                 }
 
@@ -470,7 +490,9 @@ namespace BloodyMess.Gore
                 {
                     var current = player.Weapons.Current;
                     if (weaponHash == 0) weaponHash = (uint)current.Hash;
-                    return current.Group;
+
+                    var group = current.Group;
+                    if (Enum.IsDefined(typeof(WeaponGroup), group)) return group;
                 }
             }
             catch
