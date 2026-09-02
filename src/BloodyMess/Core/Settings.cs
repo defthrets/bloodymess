@@ -60,16 +60,19 @@ namespace BloodyMess.Core
         public Keys MenuKey = Keys.F10;
 
         /// <summary>
-        /// Whether the menu can also be driven from a controller.
+        /// Whether a controller can OPEN the menu. Off.
         ///
-        /// Opened by HOLDING BOTH SHOULDER BUTTONS together.
+        /// TWO GESTURES WERE TRIED AND BOTH WERE WRONG. The View/Back button turned out to be
+        /// d-pad down on a pad, which people hold in normal play; both shoulder buttons held
+        /// together turned out to ruin shooting from a car, where they are drive-by and aim.
+        /// There is no spare chord on a controller during combat, which is exactly when this
+        /// mod is worth looking at.
         ///
-        /// It used to be the View/Back button, which was wrong: that is Control.MultiplayerInfo
-        /// and the game maps it to D-PAD DOWN on a controller -- a gesture people hold in
-        /// normal play, so the menu kept opening by itself. Two shoulders held together is not
-        /// used by any on-foot or driving action.
+        /// So the menu is keyboard-opened, on MenuKey. Once it is open a controller still
+        /// drives it perfectly well -- d-pad, A and B all work -- which is the part that
+        /// actually mattered.
         /// </summary>
-        public bool ControllerMenu = true;
+        public bool ControllerMenu = false;
 
         /// <summary>Milliseconds the View/Back button must be held to open the menu.</summary>
         public int ControllerHoldMs = 350;
@@ -156,6 +159,19 @@ namespace BloodyMess.Core
         public float SprayMinSize = 0.10f;
         public float SprayMaxSize = 0.32f;
         public float SprayOpacity = 0.85f;
+
+        /// <summary>
+        /// How many rounds a body keeps bleeding for after it is already dead.
+        ///
+        /// Shooting a corpse produced nothing at all before this, because every hit is found by
+        /// watching health fall and a corpse has none left to lose. A separate detector handles
+        /// it (see Victims.CorpseShot); this is the cap on how long it keeps answering.
+        ///
+        /// CAPPED BECAUSE A CORPSE IS UNLIMITED. A living ped stops taking hits when it dies; a
+        /// body will absorb magazine after magazine, and without a limit somebody standing over
+        /// one would own the entire decal budget within a minute. 0 turns it off.
+        /// </summary>
+        public int CorpseShots = 60;
 
         /// <summary>Whether spray is allowed to land on walls, not just the ground.</summary>
         public bool SprayOnWalls = true;
@@ -540,6 +556,7 @@ namespace BloodyMess.Core
                 cfg.SprayMaxSize = ini.GetFloat("Spray", "MaxSize", cfg.SprayMaxSize, 0.05f, 4f);
                 cfg.SprayOpacity = ini.GetFloat("Spray", "Opacity", cfg.SprayOpacity, 0.05f, 1f);
                 cfg.SprayOnWalls = ini.GetBool("Spray", "OnWalls", cfg.SprayOnWalls);
+                cfg.CorpseShots = ini.GetInt("Spray", "CorpseShots", cfg.CorpseShots, 0, 500);
                 cfg.SprayMist = ini.GetBool("Spray", "Mist", cfg.SprayMist);
                 cfg.SprayMistChance = ini.GetFloat("Spray", "MistChance",
                                                    cfg.SprayMistChance, 0f, 1f);

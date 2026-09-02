@@ -63,6 +63,9 @@ namespace BloodyMess.Gore
 
         /// <summary>Their head has already been taken off. Stops it happening twice.</summary>
         public bool HeadGone;
+
+        /// <summary>Rounds put into them since they died, capped so a corpse is not infinite.</summary>
+        public int CorpseHits;
     }
 
     /// <summary>One hit, worked out once and handed to every system that wants to react to it.</summary>
@@ -276,6 +279,7 @@ namespace BloodyMess.Gore
             // that, the next real hit reads as a hit for the entire difference.
             if (lost < MinimumDamage)
             {
+                CorpseShot(victim, ped);
                 NoteDown(victim, ped, now);
                 return;
             }
@@ -303,6 +307,93 @@ namespace BloodyMess.Gore
             victim.BleedUntil = now + (int)(seconds * 1000f);
 
             NoteDown(victim, ped, now);
+        }
+
+        /// <summary>
+        /// A round put into somebody who is already dead.
+        ///
+        /// A DIFFERENT DETECTOR IS NEEDED, and that is the whole reason shooting a corpse used
+        /// to produce nothing at all. Every hit in this mod is found by watching health fall,
+        /// and a corpse has no health left to lose -- so the delta is zero forever and no shot
+        /// after the killing one registers.
+        ///
+        /// The game does keep a "has been damaged by a weapon" flag on the entity, and it can
+        /// be cleared. Reading it and clearing it turns it into a one-shot edge: the flag is
+        /// set again by the next round, so each impact is counted exactly once. That is a
+        /// per-shot signal that works on a body which is already at zero.
+        ///
+        /// CAPPED PER BODY, because unlike a living ped a corpse can absorb rounds forever --
+        /// somebody emptying a magazine into one would otherwise paint the street until the
+        /// decal budget was entirely theirs.
+        /// </summary>
+        private void CorpseShot(Victim victim, Ped ped)
+        {
+            if (_cfg.CorpseShots <= 0) return;
+            if (victim.IsPlayer) return;
+            if (victim.CorpseHits >= _cfg.CorpseShots) return;
+
+            try
+            {
+                if (!ped.IsDead) return;
+                if (!ped.HasBeenDamagedByAnyWeapon()) return;
+
+                // Consume the flag so the NEXT round sets it again. Without this it stays true
+                // and every frame would read as another hit.
+                ped.ClearLastWeaponDamage();
+            }
+            catch
+            {
+                return;
+            }
+
+            victim.CorpseHits++;
+
+            var hit = new Hit
+            {
+                Victim = victim,
+                Ped = ped,
+
+                // Fixed and modest. The real damage is zero -- they are already dead -- and
+                // feeding zero in would scale the spray down to nothing, while feeding the
+                // weapon's full damage in would make every corpse shot as big as a kill.
+                Damage = 22f,
+                Fatal = false,
+                Group = PlayerWeapon(out var weaponHash),
+                WeaponHash = weaponHash
+            };
+
+            Locate(ref hit, ped);
+            _hits.Add(hit);
+        }
+
+        /// <summary>
+        /// The player's current weapon.
+        ///
+        /// Used for corpse shots rather than WeaponUsed, which reads the CAUSE OF DEATH for a
+        /// dead ped -- the right answer for the killing blow and the wrong one for whatever is
+        /// being emptied into them now.
+        /// </summary>
+        private static WeaponGroup PlayerWeapon(out uint weaponHash)
+        {
+            weaponHash = 0;
+
+            try
+            {
+                var player = Game.Player.Character;
+                if (player == null || !player.Exists()) return WeaponGroup.Unarmed;
+
+                var current = player.Weapons.Current;
+                weaponHash = (uint)current.Hash;
+
+                var group = current.Group;
+                if (Enum.IsDefined(typeof(WeaponGroup), group)) return group;
+            }
+            catch
+            {
+                // Fall through.
+            }
+
+            return WeaponGroup.Unarmed;
         }
 
         /// <summary>Records the moment a ped went down, which is when their pool starts.</summary>

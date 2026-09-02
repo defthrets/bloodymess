@@ -805,6 +805,8 @@ namespace BloodyMess.UI
                    () => _cfg.SprayOnWalls, v => _cfg.SprayOnWalls = v);
             Number("Blood on the ground", "Spray", "GroundDrops",
                    () => _cfg.SprayGroundDrops, v => _cfg.SprayGroundDrops = (int)v, 0f, 64f, 2f);
+            Number("Shots into a corpse", "Spray", "CorpseShots",
+                   () => _cfg.CorpseShots, v => _cfg.CorpseShots = (int)v, 0f, 200f, 5f);
             Number("Mist", "Spray", "MistChance",
                    () => _cfg.SprayMistChance, v => _cfg.SprayMistChance = v, 0f, 1f, 0.05f);
             Switch("Spray from the wound", "Spray", "Particles",
