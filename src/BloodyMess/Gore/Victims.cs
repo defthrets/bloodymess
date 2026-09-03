@@ -66,6 +66,12 @@ namespace BloodyMess.Gore
 
         /// <summary>Rounds put into them since they died, capped so a corpse is not infinite.</summary>
         public int CorpseHits;
+
+        /// <summary>Shot in the legs and down on the ground rather than dead.</summary>
+        public bool Crippled;
+
+        /// <summary>Game time in milliseconds when they went down.</summary>
+        public int CrippledAt;
     }
 
     /// <summary>One hit, worked out once and handed to every system that wants to react to it.</summary>

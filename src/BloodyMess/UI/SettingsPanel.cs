@@ -846,6 +846,14 @@ namespace BloodyMess.UI
 
             NewTab("Extras", IconExtras);
 
+            Switch("Legs drop them alive", "Legs", "Enabled",
+                   () => _cfg.LegsEnabled, v => _cfg.LegsEnabled = v);
+            Number("...how often", "Legs", "Chance",
+                   () => _cfg.LegsChance, v => _cfg.LegsChance = v, 0f, 1f, 0.05f);
+            Number("...for how long", "Legs", "Seconds",
+                   () => _cfg.LegsSeconds, v => _cfg.LegsSeconds = v, 2f, 300f, 5f);
+            Switch("...then they bleed out", "Legs", "BleedOut",
+                   () => _cfg.LegsBleedOut, v => _cfg.LegsBleedOut = v);
             Switch("Heads come off", "Heads", "Enabled",
                    () => _cfg.HeadsEnabled, v => _cfg.HeadsEnabled = v);
             Number("...how often", "Heads", "Chance",

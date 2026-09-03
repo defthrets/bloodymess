@@ -43,6 +43,7 @@ namespace BloodyMess
         private readonly Globals _globals;
         private readonly Wounds _wounds;
         private readonly Heads _heads;
+        private readonly Legs _legs;
         private readonly Spray _spray;
         private readonly Pools _pools;
         private readonly Drips _drips;
@@ -69,6 +70,7 @@ namespace BloodyMess
             _globals = new Globals(_cfg);
             _wounds = new Wounds(_cfg, _profiles);
             _heads = new Heads(_cfg, _profiles);
+            _legs = new Legs(_cfg);
             _spray = new Spray(_cfg, _decals, _profiles, _field);
             _pools = new Pools(_cfg, _decals, _field);
             _drips = new Drips(_cfg, _decals, _field);
@@ -125,6 +127,10 @@ namespace BloodyMess
                     // blood decals stamped onto it first.
                     var headless = _heads.Try(hit);
 
+                    // Before the wounds, like the head, so the decision about whether they
+                    // survive is made before anything is drawn on them.
+                    if (!headless) _legs.Try(hit);
+
                     if (!headless) _wounds.Apply(hit);
 
                     _spray.Throw(hit);
@@ -134,6 +140,7 @@ namespace BloodyMess
                 // placing them all in the frame the shot landed spiked the frame time.
                 _spray.Update();
 
+                _legs.Update(_victims);
                 _pools.Update(_victims);
                 _drips.Update(_victims);
 

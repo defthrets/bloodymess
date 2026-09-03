@@ -441,6 +441,45 @@ namespace BloodyMess.Core
         /// <summary>Novelty. Green.</summary>
         public bool AlienBlood = false;
 
+        // ---- Legs ------------------------------------------------------------
+
+        /// <summary>
+        /// Whether a hit to the legs puts somebody on the ground alive instead of killing them.
+        ///
+        /// THE ONLY PART OF THIS MOD THAT CHANGES HOW THE GAME PLAYS. Everything else is
+        /// blood -- switch it off and the fight is identical. This makes people survive shots
+        /// that would have killed them, using the game's own TASK_WRITHE wounded state, so it
+        /// is the first thing to suspect if the police or gang mods sharing this scripts
+        /// folder start behaving oddly: they reasonably expect a ped shot enough to die to die.
+        /// </summary>
+        public bool LegsEnabled = true;
+
+        /// <summary>Chance from 0 to 1 that a leg hit downs them rather than passing through.</summary>
+        public float LegsChance = 0.6f;
+
+        /// <summary>Health points a leg hit must do before it can take them down.</summary>
+        public float LegsMinDamage = 10f;
+
+        /// <summary>
+        /// Health they are lifted to at the moment of going down.
+        ///
+        /// Clamped ONCE and never again, so every round afterwards lands normally and a downed
+        /// ped stays perfectly killable. Low, so it takes very little to finish them.
+        /// </summary>
+        public float LegsHealth = 20f;
+
+        /// <summary>Seconds they crawl before bleeding out.</summary>
+        public float LegsSeconds = 45f;
+
+        /// <summary>
+        /// Whether they die at the end of that, rather than standing back up.
+        ///
+        /// On, because the alternative is a ped getting to their feet and walking away on a
+        /// leg that was shot out from under them a minute ago, which looks worse than either
+        /// outcome.
+        /// </summary>
+        public bool LegsBleedOut = true;
+
         // ---- Heads -----------------------------------------------------------
 
         /// <summary>
@@ -622,6 +661,13 @@ namespace BloodyMess.Core
                 cfg.ShotgunDecals = ini.GetBool("Game", "ShotgunDecals", cfg.ShotgunDecals);
                 cfg.ClownBlood = ini.GetBool("Game", "ClownBlood", cfg.ClownBlood);
                 cfg.AlienBlood = ini.GetBool("Game", "AlienBlood", cfg.AlienBlood);
+
+                cfg.LegsEnabled = ini.GetBool("Legs", "Enabled", cfg.LegsEnabled);
+                cfg.LegsChance = ini.GetFloat("Legs", "Chance", cfg.LegsChance, 0f, 1f);
+                cfg.LegsMinDamage = ini.GetFloat("Legs", "MinDamage", cfg.LegsMinDamage, 0f, 500f);
+                cfg.LegsHealth = ini.GetFloat("Legs", "Health", cfg.LegsHealth, 1f, 200f);
+                cfg.LegsSeconds = ini.GetFloat("Legs", "Seconds", cfg.LegsSeconds, 2f, 600f);
+                cfg.LegsBleedOut = ini.GetBool("Legs", "BleedOut", cfg.LegsBleedOut);
 
                 cfg.HeadsEnabled = ini.GetBool("Heads", "Enabled", cfg.HeadsEnabled);
                 cfg.HeadsChance = ini.GetFloat("Heads", "Chance", cfg.HeadsChance, 0f, 1f);
