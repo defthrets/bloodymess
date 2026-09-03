@@ -27,7 +27,12 @@
     "",
     "headExplode is the chance from 0 to 1 that a HEADSHOT from this weapon takes the",
     "  head clean off. It is multiplied by [Heads] Chance in the ini. This is the only",
-    "  dismemberment GTA V supports - there are no natives for severing anything else."
+    "  dismemberment GTA V supports - there are no natives for severing anything else.",
+    "",
+    "spray now scales BOTH the thrown splatter AND the blood that drops straight down",
+    "  onto the ground (GroundDrops in the ini). It used to scale only the thrown half,",
+    "  so fists made as much mess on the floor as a rifle did. Unarmed is deliberately",
+    "  tiny; Melee is full, because a knife should bleed."
   ],
   "default": {
     "entryFx": "blood_entry",
@@ -113,7 +118,7 @@
       "headFx": "blood_nose",
       "wound": "BasicSlash",
       "bigWound": "BasicSlash",
-      "spray": 0.4,
+      "spray": 0.08,
       "fxScale": 0.8,
       "headExplode": 0.0
     },

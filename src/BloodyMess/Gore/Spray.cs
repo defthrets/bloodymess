@@ -149,7 +149,18 @@ namespace BloodyMess.Gore
         /// </summary>
         private void Underfoot(Hit hit, float force)
         {
-            var drops = (int)Math.Round(_cfg.SprayGroundDrops * _cfg.Scale);
+            // SCALED BY THE WEAPON, which it was not before, and that was the whole reason a
+            // punch made as much mess as a rifle. The thrown spray above has always been
+            // multiplied by the weapon's own `spray` figure; this, the blood that falls
+            // straight down and is by far the larger share of what ends up on the ground,
+            // ignored the weapon completely and used the flat setting for everything.
+            //
+            // So fists produced the same thirty-odd ground drops as an assault rifle. Nothing
+            // in the tuning could fix that, because the number the tuning changes was the one
+            // being applied equally to both.
+            var profile = _profiles.For(hit.Group);
+
+            var drops = (int)Math.Round(_cfg.SprayGroundDrops * _cfg.Scale * profile.Spray);
             if (drops <= 0) return;
 
             drops = Math.Min(drops, 48);
